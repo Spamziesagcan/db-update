@@ -1,0 +1,226 @@
+# Real-Time Order Notification System
+
+A real-time system that automatically notifies clients whenever data changes occur in the database using MySQL triggers, FastAPI, and WebSockets. This system ensures connected clients receive instantaneous updates on any inserts, updates, or deletes on the `orders` table without relying on frequent polling.
+
+---
+
+## Table of Contents
+
+- [Project Overview](#project-overview)
+- [Problem Statement](#problem-statement)
+- [Architecture](#architecture)
+- [Technology Choices and Trade-offs](#technology-choices-and-trade-offs)
+- [Setup Instructions](#setup-instructions)
+- [API Endpoints](#api-endpoints)
+- [Testing](#testing)
+- [Scalability and Production Improvements](#scalability-and-production-improvements)
+- [Technical Discussion and FAQs](#technical-discussion-and-faqs)
+- [License](#license)
+
+---
+
+## Project Overview
+
+This project implements a backend service that listens for database changes using MySQL triggers and notifies connected clients via WebSockets served by a FastAPI backend. Clients can be either a web dashboard or a CLI script, both receiving real-time updates about changes to orders.
+
+---
+
+## Problem Statement
+
+Build a system where clients automatically receive updates whenever the data in the `orders` MySQL table changes. The system must operate in real-time without relying on frequent client polling and must handle any insert, update, or delete on the `orders` table by pushing those changes to the connected clients automatically.
+
+---
+
+## Architecture
+
+[MySQL DB] → [Triggers] → [Notification Table] → [FastAPI Poller] → [WebSocket Manager] → [Connected Clients]
+
+text
+
+- **MySQL DB:** Hosts the `orders` table and logs changes into a dedicated notification table via triggers.
+- **Triggers:** MySQL triggers tied to insert, update, delete operations populate the notification table.
+- **Notification Table:** Acts as a queue for backend to poll new change events.
+- **FastAPI Backend:** Polls notifications and manages WebSocket connections.
+- **WebSocket Manager:** Distributes notifications to clients in real-time.
+- **Clients:** Web dashboard or CLI apps display live updates.
+
+---
+
+## Technology Choices and Trade-offs
+
+### Why this approach?
+
+- **MySQL Triggers:** Immediate and reliable capture of changes inside the database, simple to implement for demos.
+- **FastAPI:** Async Python framework with excellent WebSocket support.
+- **WebSockets:** Persistent, two-way communication enabling real-time push without client-side polling.
+- **Polling (Backend-side):** Backend polls the notification table with low latency (~100ms) to detect DB changes efficiently.
+
+### Pros
+
+- Real-time updates without client polling.
+- Minimal external dependencies.
+- Simple to understand and debug.
+- Architecture emphasizes separation of concerns.
+
+### Cons
+
+- Triggers add some overhead to DB write operations.
+- Polling by backend introduces slight latency.
+- Requires database schema modification (notification table and triggers).
+- Not ideal for extremely high-frequency/high-scale applications without optimization.
+
+---
+
+## Setup Instructions
+
+### 1. Database Setup
+
+- Run the provided SQL script to create `orders` and `order_notifications` tables, and define triggers:
+
+mysql -u root -p < setup.sql
+
+text
+
+*(Make sure binary logging is enabled in your MySQL config for production scenarios)*
+
+### 2. Environment Setup
+
+- Install Python dependencies:
+
+pip install -r requirements.txt
+
+text
+
+- Configure database credentials in `.env` file:
+
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=realtime_orders
+DB_PORT=3306
+
+text
+
+### 3. Running the Backend
+
+Start the FastAPI server:
+
+uvicorn main:app --reload --port 8000
+
+text
+
+### 4. Using the Web Dashboard
+
+- Navigate to [http://localhost:8000](http://localhost:8000) in a browser.
+- The page will display real-time order updates sent via WebSockets.
+- Use provided buttons to create, update, or delete orders for testing.
+
+### 5. Running the CLI Client (Optional)
+
+python client.py
+
+text
+
+This CLI client listens to real-time updates and prints messages on the terminal.
+
+---
+
+## API Endpoints
+
+| Method | Endpoint         | Description                  |
+|--------|------------------|------------------------------|
+| GET    | `/`              | Serves the web dashboard     |
+| WS     | `/ws`            | WebSocket endpoint for notifications |
+| POST   | `/api/orders`    | Create a new order           |
+| PUT    | `/api/orders/{id}` | Update an existing order     |
+| DELETE | `/api/orders/{id}` | Delete an order              |
+
+---
+
+## Testing
+
+### Manual Tests
+
+1. Open the web dashboard and observe the connection status.
+2. Use the buttons to insert, update, or delete orders.
+3. Changes should appear instantly in the dashboard.
+4. Run the CLI client and verify it receives notifications.
+
+### Database Trigger Testing
+
+Run SQL commands directly:
+
+INSERT INTO orders (customer_name, product_name, status) VALUES ('TestUser', 'ProductA', 'pending');
+UPDATE orders SET status = 'shipped' WHERE id = 1;
+DELETE FROM orders WHERE id = 1;
+
+text
+
+All changes trigger corresponding notifications to the clients.
+
+### Load Testing (Optional)
+
+Simulate multiple WebSocket clients to ensure backend handles connections properly.
+
+---
+
+## Scalability and Production Improvements
+
+### Current Limitations
+
+- Triggers cause extra DB write load.
+- Backend polling adds minor latency.
+- Single backend instance limits concurrency and fault tolerance.
+- No persistent message queue: lost messages if server crashes.
+
+### Recommended Enhancements
+
+1. **Binlog-based CDC:**
+   - Replace triggers with a MySQL binlog listener (e.g., `python-mysql-replication`).
+   - Capture all changes asynchronously without affecting DB performance.
+
+2. **Message Queue Integration:**
+   - Stream notifications via Kafka, RabbitMQ, or Redis for durability and horizontal scaling.
+   - Decouple DB change capture from WebSocket delivery.
+
+3. **Horizontal Scaling:**
+   - Use load balancers and multiple backend instances.
+   - Share pub/sub WebSocket state with Redis or other coordination services.
+
+4. **Monitoring & Alerting:**
+   - Add observability on connection counts, message delivery, and errors.
+
+---
+
+## Technical Discussion and FAQs
+
+### Why not use polling on the client?
+
+Polling clients create unnecessary network traffic and add latency depending on the polling interval. WebSockets provide instant, server-pushed updates reducing resource consumption and improving user experience.
+
+### How would you scale to 10,000+ clients?
+
+- Distribute WebSocket connections across multiple backend instances.
+- Use Redis or Kafka for message broadcasting.
+- Offload DB change detection to binlog CDC to avoid trigger overhead.
+- Employ load balancing with sticky sessions and horizontal scaling.
+
+### What if a client disconnects?
+
+- WebSocket manager cleans up disconnected clients to free resources.
+- Clients implement reconnection logic with exponential backoff.
+- Future improvements may buffer missed messages for guaranteed delivery.
+
+### Why use triggers instead of directly reading binlog?
+
+Triggers are easier to implement as a demo without additional infrastructure or complex setups. For production, binlog reading is preferred for better performance and reliability.
+
+---
+
+## License
+
+This project is open source and free to use under the MIT License.
+
+---
+
+Thank you for reviewing this project. For questions or suggestions, please contact [Your Name] or check the source repository.
