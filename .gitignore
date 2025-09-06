@@ -1,0 +1,6 @@
+# Environment variables
+db.env
+.env
+
+# Python virtual environment
+venv/
