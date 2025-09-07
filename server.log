@@ -1,0 +1,348 @@
+2025-09-06 04:07:58,190 - main - INFO - Starting application...
+2025-09-06 04:07:58,230 - main - ERROR - Failed to create database pool: (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+2025-09-06 04:07:58,230 - main - ERROR - Startup error: (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+2025-09-06 04:07:58,230 - main - INFO - Shutting down application...
+2025-09-06 04:13:54,808 - main - INFO - Starting application...
+2025-09-06 04:13:54,829 - main - ERROR - Failed to create database pool: (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+2025-09-06 04:13:54,829 - main - ERROR - Startup error: (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+2025-09-06 04:13:54,829 - main - INFO - Shutting down application...
+2025-09-06 04:18:21,571 - main - INFO - Starting application...
+2025-09-06 04:18:21,590 - main - ERROR - Failed to create database pool: (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+2025-09-06 04:18:21,590 - main - ERROR - Startup error: (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+2025-09-06 04:18:21,594 - main - INFO - Shutting down application...
+2025-09-06 04:21:08,131 - main - INFO - Starting application...
+2025-09-06 04:21:08,149 - main - ERROR - Failed to create database pool: (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+2025-09-06 04:21:08,149 - main - ERROR - Startup error: (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+2025-09-06 04:21:08,149 - main - INFO - Shutting down application...
+2025-09-06 04:23:38,429 - main - INFO - Starting application...
+2025-09-06 04:23:38,448 - main - ERROR - Failed to create database pool: (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+2025-09-06 04:23:38,448 - main - ERROR - Startup error: (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+2025-09-06 04:23:38,448 - main - INFO - Shutting down application...
+2025-09-06 04:35:44,498 - main - INFO - Starting application...
+2025-09-06 04:35:44,517 - main - ERROR - Failed to create database pool: (1049, "Unknown database 'realtime_orders'")
+2025-09-06 04:35:44,517 - main - ERROR - Startup error: (1049, "Unknown database 'realtime_orders'")
+2025-09-06 04:35:44,517 - main - INFO - Shutting down application...
+2025-09-06 04:42:36,390 - main - INFO - Starting application...
+2025-09-06 04:42:36,444 - main - INFO - Database pool created: 5-20 connections
+2025-09-06 04:42:36,648 - main - INFO - Database connection successful and tables verified
+2025-09-06 04:42:36,668 - main - INFO - Initialized listener with last_processed_id: 0
+2025-09-06 04:42:36,668 - main - INFO - Application startup complete
+2025-09-06 04:42:36,668 - main - INFO - Starting database notification listener
+2025-09-06 04:43:28,881 - main - INFO - Client 95ea7a75-27df-4337-b6f4-b1f0a77ef643 connected. Total connections: 1
+2025-09-06 04:43:44,558 - main - INFO - Order 1 created successfully
+2025-09-06 04:43:48,111 - main - INFO - Order 2 created successfully
+2025-09-06 04:43:48,646 - main - INFO - Order 3 created successfully
+2025-09-06 04:43:49,028 - main - INFO - Order 4 created successfully
+2025-09-06 04:43:49,744 - main - INFO - Order 5 created successfully
+2025-09-06 04:43:50,145 - main - INFO - Order 6 created successfully
+2025-09-06 04:43:50,439 - main - INFO - Order 7 created successfully
+2025-09-06 04:43:50,980 - main - INFO - Order 8 created successfully
+2025-09-06 04:43:51,321 - main - INFO - Order 9 created successfully
+2025-09-06 04:43:51,684 - main - INFO - Order 10 created successfully
+2025-09-06 04:43:56,095 - main - INFO - Order 11 created successfully
+2025-09-06 04:43:56,661 - main - INFO - Order 12 created successfully
+2025-09-06 04:43:56,951 - main - INFO - Order 13 created successfully
+2025-09-06 04:44:07,102 - main - INFO - Order 14 created successfully
+2025-09-06 04:44:07,301 - main - INFO - Order 15 created successfully
+2025-09-06 04:44:07,472 - main - INFO - Order 16 created successfully
+2025-09-06 04:44:07,677 - main - INFO - Order 17 created successfully
+2025-09-06 04:44:07,876 - main - INFO - Order 18 created successfully
+2025-09-06 04:59:59,418 - main - INFO - Client 95ea7a75-27df-4337-b6f4-b1f0a77ef643 disconnected. Total connections: 0
+2025-09-06 05:00:00,183 - main - INFO - Client fde6733d-ac0a-4b9e-aebd-b02f6429cabe connected. Total connections: 1
+2025-09-06 05:03:21,943 - main - INFO - Client fde6733d-ac0a-4b9e-aebd-b02f6429cabe disconnected. Total connections: 0
+2025-09-06 05:03:22,651 - main - INFO - Client a7a4b190-5dc7-499a-92f7-eecc52492698 connected. Total connections: 1
+2025-09-06 05:06:34,991 - main - INFO - Client a7a4b190-5dc7-499a-92f7-eecc52492698 disconnected. Total connections: 0
+2025-09-06 05:06:35,534 - main - INFO - Client 09d7f472-1588-4fee-85cd-1cf80bcc8120 connected. Total connections: 1
+2025-09-06 05:06:38,482 - main - INFO - Client 09d7f472-1588-4fee-85cd-1cf80bcc8120 disconnected. Total connections: 0
+2025-09-06 05:06:38,990 - main - INFO - Client 9d52a93c-4c19-4542-a77e-1a890e13cfc1 connected. Total connections: 1
+2025-09-06 05:07:04,996 - main - INFO - Client 9d52a93c-4c19-4542-a77e-1a890e13cfc1 disconnected. Total connections: 0
+2025-09-06 05:07:05,516 - main - INFO - Client f50d5080-748b-442d-8876-61cb7a669dd2 connected. Total connections: 1
+2025-09-06 05:36:22,600 - main - INFO - Client f50d5080-748b-442d-8876-61cb7a669dd2 disconnected. Total connections: 0
+2025-09-06 05:36:23,347 - main - INFO - Client 6f2a7766-3153-4442-a59d-f8df73194395 connected. Total connections: 1
+2025-09-06 05:36:43,729 - main - INFO - Client 6f2a7766-3153-4442-a59d-f8df73194395 disconnected. Total connections: 0
+2025-09-06 05:36:44,216 - main - INFO - Client a79ecf1e-6685-4c4d-b151-5646f6f9d036 connected. Total connections: 1
+2025-09-06 05:39:34,535 - main - INFO - Order 35 created successfully
+2025-09-06 05:39:40,508 - main - INFO - Order 36 created successfully
+2025-09-06 05:39:42,914 - main - INFO - Client a79ecf1e-6685-4c4d-b151-5646f6f9d036 disconnected. Total connections: 0
+2025-09-06 05:39:43,457 - main - INFO - Client 009c1ffd-6b34-49af-add2-80792d6fbaa2 connected. Total connections: 1
+2025-09-06 05:39:47,717 - main - INFO - Order 37 created successfully
+2025-09-06 05:39:47,832 - main - INFO - Order 38 created successfully
+2025-09-06 05:39:47,940 - main - INFO - Order 39 created successfully
+2025-09-06 05:39:48,052 - main - INFO - Order 40 created successfully
+2025-09-06 05:39:48,161 - main - INFO - Order 41 created successfully
+2025-09-06 05:39:54,431 - main - INFO - Client 009c1ffd-6b34-49af-add2-80792d6fbaa2 disconnected. Total connections: 0
+2025-09-06 05:39:54,948 - main - INFO - Client dd708ecf-4245-4de7-bf99-896efb6aa3b1 connected. Total connections: 1
+2025-09-06 05:39:56,696 - main - INFO - Order 34 deleted successfully
+2025-09-06 05:41:00,018 - main - INFO - Client dd708ecf-4245-4de7-bf99-896efb6aa3b1 disconnected. Total connections: 0
+2025-09-06 05:41:00,548 - main - INFO - Client c7d83ddb-ce56-4a8f-b99d-c74b0444c99f connected. Total connections: 1
+2025-09-06 05:41:02,788 - main - INFO - Order 36 deleted successfully
+2025-09-06 05:41:49,824 - main - INFO - Client c7d83ddb-ce56-4a8f-b99d-c74b0444c99f disconnected. Total connections: 0
+2025-09-06 05:41:50,336 - main - INFO - Client 1d11b930-ee67-4a3d-8ab5-3df6976c7df7 connected. Total connections: 1
+2025-09-06 05:42:07,689 - main - INFO - Client 1d11b930-ee67-4a3d-8ab5-3df6976c7df7 disconnected. Total connections: 0
+2025-09-06 05:42:08,203 - main - INFO - Client 1ccd1bb7-8170-4249-a9fa-4c7b46e82c30 connected. Total connections: 1
+2025-09-06 05:42:21,032 - main - INFO - Client 1ccd1bb7-8170-4249-a9fa-4c7b46e82c30 disconnected. Total connections: 0
+2025-09-06 09:21:20,350 - main - INFO - Client 610b3050-8b11-4d2d-9d3b-62a91291f38b connected. Total connections: 1
+2025-09-06 09:21:30,081 - main - INFO - Client 610b3050-8b11-4d2d-9d3b-62a91291f38b disconnected. Total connections: 0
+2025-09-06 09:21:31,109 - main - INFO - Client 3d0e2778-5098-4071-b7f8-723d5092220c connected. Total connections: 1
+2025-09-06 09:23:33,062 - main - INFO - Client 3d0e2778-5098-4071-b7f8-723d5092220c disconnected. Total connections: 0
+2025-09-06 09:23:33,712 - main - INFO - Client 2e2cd069-afdf-4a16-a954-eb1f6ea210bd connected. Total connections: 1
+2025-09-06 09:24:05,389 - main - INFO - Client 2e2cd069-afdf-4a16-a954-eb1f6ea210bd disconnected. Total connections: 0
+2025-09-06 09:24:06,038 - main - INFO - Client e54c4b79-6fbf-4609-a2b2-76d2f7d4f1f2 connected. Total connections: 1
+2025-09-06 09:24:52,914 - main - INFO - Client e54c4b79-6fbf-4609-a2b2-76d2f7d4f1f2 disconnected. Total connections: 0
+2025-09-06 09:24:53,549 - main - INFO - Client 5773bf54-bf2d-4f42-a7e2-63b7cf8100a5 connected. Total connections: 1
+2025-09-06 09:25:05,378 - main - INFO - Client 5773bf54-bf2d-4f42-a7e2-63b7cf8100a5 disconnected. Total connections: 0
+2025-09-06 09:25:06,060 - main - INFO - Client f0e12f93-e10b-4c4e-af03-69a86cdb2284 connected. Total connections: 1
+2025-09-06 09:25:39,481 - main - INFO - Client f0e12f93-e10b-4c4e-af03-69a86cdb2284 disconnected. Total connections: 0
+2025-09-06 09:25:40,059 - main - INFO - Client 0cafc805-83b0-4f78-9dcf-7e83c213fab6 connected. Total connections: 1
+2025-09-06 09:34:48,200 - main - INFO - Client 0cafc805-83b0-4f78-9dcf-7e83c213fab6 disconnected. Total connections: 0
+2025-09-06 09:34:48,304 - main - INFO - Shutting down application...
+2025-09-06 09:34:48,304 - main - INFO - Database notification listener stopped
+2025-09-06 09:34:48,304 - main - INFO - Database pool closed
+2025-09-06 09:34:48,304 - main - INFO - Application shutdown complete
+2025-09-06 09:34:50,412 - main - INFO - Starting application...
+2025-09-06 09:34:50,447 - main - INFO - Database pool created: 5-20 connections
+2025-09-06 09:34:50,483 - main - INFO - Database connection successful and tables verified
+2025-09-06 09:34:50,484 - main - INFO - Initialized listener with last_processed_id: 0
+2025-09-06 09:34:50,484 - main - INFO - Application startup complete
+2025-09-06 09:34:50,487 - main - INFO - Starting database notification listener
+2025-09-06 09:34:50,530 - main - INFO - Client 1806e8d5-35b8-4ee4-81c5-af762f74e956 connected. Total connections: 1
+2025-09-06 09:35:20,163 - main - INFO - Client 1806e8d5-35b8-4ee4-81c5-af762f74e956 disconnected. Total connections: 0
+2025-09-06 09:35:21,198 - main - INFO - Client 755a660d-411c-4ce2-98a0-4ece1e1da5fc connected. Total connections: 1
+2025-09-06 09:35:30,253 - main - INFO - Client 755a660d-411c-4ce2-98a0-4ece1e1da5fc disconnected. Total connections: 0
+2025-09-06 09:35:30,911 - main - INFO - Client 1a48cfe2-b723-4589-9208-51585798673b connected. Total connections: 1
+2025-09-06 09:41:27,973 - main - INFO - Client 1a48cfe2-b723-4589-9208-51585798673b disconnected. Total connections: 0
+2025-09-06 09:41:29,208 - main - INFO - Client 1f0ea79e-239d-4e8d-b0ee-c512a03e2683 connected. Total connections: 1
+2025-09-06 09:45:46,384 - main - INFO - Client 4db337a1-b9ba-4514-a46a-a0b1007db467 connected. Total connections: 2
+2025-09-06 09:46:06,635 - main - INFO - Client 4db337a1-b9ba-4514-a46a-a0b1007db467 disconnected. Total connections: 1
+2025-09-06 09:46:07,334 - main - INFO - Client d10866ac-af97-468d-9172-d8661dcc9fea connected. Total connections: 2
+2025-09-06 09:47:18,974 - main - INFO - Client d10866ac-af97-468d-9172-d8661dcc9fea disconnected. Total connections: 1
+2025-09-06 09:47:19,774 - main - INFO - Client 8a0bd31a-af2c-400b-8a65-a7aff37a9d6f connected. Total connections: 2
+2025-09-06 09:47:24,282 - main - INFO - Client 1f0ea79e-239d-4e8d-b0ee-c512a03e2683 disconnected. Total connections: 1
+2025-09-06 09:47:26,079 - main - INFO - Client 8a0bd31a-af2c-400b-8a65-a7aff37a9d6f disconnected. Total connections: 0
+2025-09-06 09:47:26,717 - main - INFO - Client c64a55c4-72f1-48fc-8a50-da5514b8e02e connected. Total connections: 1
+2025-09-06 09:51:10,987 - main - INFO - Client c64a55c4-72f1-48fc-8a50-da5514b8e02e disconnected. Total connections: 0
+2025-09-06 09:51:11,634 - main - INFO - Client 68fa2d1a-bc09-41c0-9624-f4c45aee5b0c connected. Total connections: 1
+2025-09-06 09:53:03,274 - main - INFO - Client f6c5846c-090f-4f58-a1c8-b00b44a94550 connected. Total connections: 2
+2025-09-06 09:53:05,764 - main - INFO - Client 6448bb97-7b51-4060-82e1-b82abfc7e0db connected. Total connections: 3
+2025-09-06 09:53:06,887 - main - INFO - Client 6d0015f4-2815-4399-948c-2e682e0ffbf9 connected. Total connections: 4
+2025-09-06 09:53:07,770 - main - INFO - Client be667c9c-84f7-4da7-8e35-a1809a6779bf connected. Total connections: 5
+2025-09-06 09:53:08,462 - main - INFO - Client 69557b63-8975-4803-a429-a8f977d5482d connected. Total connections: 6
+2025-09-06 09:53:08,724 - main - INFO - Client 382936bb-42d5-4546-8c65-5bc3d1934ad0 connected. Total connections: 7
+2025-09-06 09:53:11,890 - main - INFO - Client 382936bb-42d5-4546-8c65-5bc3d1934ad0 disconnected. Total connections: 6
+2025-09-06 09:53:12,480 - main - INFO - Client 69557b63-8975-4803-a429-a8f977d5482d disconnected. Total connections: 5
+2025-09-06 09:53:13,091 - main - INFO - Client be667c9c-84f7-4da7-8e35-a1809a6779bf disconnected. Total connections: 4
+2025-09-06 09:53:13,621 - main - INFO - Client 6d0015f4-2815-4399-948c-2e682e0ffbf9 disconnected. Total connections: 3
+2025-09-06 09:53:14,159 - main - INFO - Client 6448bb97-7b51-4060-82e1-b82abfc7e0db disconnected. Total connections: 2
+2025-09-06 09:53:14,778 - main - INFO - Client f6c5846c-090f-4f58-a1c8-b00b44a94550 disconnected. Total connections: 1
+2025-09-06 09:53:18,887 - main - INFO - Client 68fa2d1a-bc09-41c0-9624-f4c45aee5b0c disconnected. Total connections: 0
+2025-09-06 09:53:25,195 - main - INFO - Client da1c4c5c-f906-45be-aaef-9b9e41d57702 connected. Total connections: 1
+2025-09-06 09:53:28,783 - main - INFO - Client da1c4c5c-f906-45be-aaef-9b9e41d57702 disconnected. Total connections: 0
+2025-09-06 09:53:29,390 - main - INFO - Client e8260a33-2d1b-4add-8737-6723dd76631d connected. Total connections: 1
+2025-09-06 10:52:23,609 - main - INFO - Client e8260a33-2d1b-4add-8737-6723dd76631d disconnected. Total connections: 0
+2025-09-06 11:20:33,113 - main - INFO - Client a14c87a6-9b8a-47de-9537-bdf3c0fccee1 connected. Total connections: 1
+2025-09-06 11:22:13,003 - main - INFO - Client a14c87a6-9b8a-47de-9537-bdf3c0fccee1 disconnected. Total connections: 0
+2025-09-06 11:22:13,087 - main - INFO - Shutting down application...
+2025-09-06 11:22:13,087 - main - INFO - Database notification listener stopped
+2025-09-06 11:22:13,087 - main - INFO - Database pool closed
+2025-09-06 11:22:13,092 - main - INFO - Application shutdown complete
+2025-09-06 11:22:15,260 - main - INFO - Starting application...
+2025-09-06 11:22:15,283 - main - INFO - Database pool created: 5-20 connections
+2025-09-06 11:22:15,299 - main - INFO - Database connection successful and tables verified
+2025-09-06 11:22:15,299 - main - INFO - Initialized listener with last_processed_id: 0
+2025-09-06 11:22:15,299 - main - INFO - Application startup complete
+2025-09-06 11:22:15,299 - main - INFO - Starting database notification listener
+2025-09-06 11:22:15,348 - main - INFO - Client 6d5412c2-6630-42b9-bc20-e1b494cbde5e connected. Total connections: 1
+2025-09-06 11:28:44,768 - main - INFO - Client 6d5412c2-6630-42b9-bc20-e1b494cbde5e disconnected. Total connections: 0
+2025-09-06 11:28:45,576 - main - INFO - Client 96d01b90-a145-4c73-a05a-8cbab769769f connected. Total connections: 1
+2025-09-06 11:29:17,244 - main - INFO - Client 96d01b90-a145-4c73-a05a-8cbab769769f disconnected. Total connections: 0
+2025-09-06 11:29:17,745 - main - INFO - Client ab96057a-20eb-4638-92e8-11d2cf2bbeb0 connected. Total connections: 1
+2025-09-06 11:29:38,357 - main - INFO - Client ab96057a-20eb-4638-92e8-11d2cf2bbeb0 disconnected. Total connections: 0
+2025-09-06 11:29:38,881 - main - INFO - Client a78d3493-7878-4a18-a5e2-e06985852b0b connected. Total connections: 1
+2025-09-06 11:29:43,212 - main - INFO - Order 33 deleted successfully
+2025-09-06 11:29:46,302 - main - INFO - Client a78d3493-7878-4a18-a5e2-e06985852b0b disconnected. Total connections: 0
+2025-09-06 11:29:46,805 - main - INFO - Client 3610e6f1-2f85-4ba4-89f7-96c7efe4a783 connected. Total connections: 1
+2025-09-06 12:00:06,020 - main - INFO - Client 3610e6f1-2f85-4ba4-89f7-96c7efe4a783 disconnected. Total connections: 0
+2025-09-06 12:00:07,042 - main - INFO - Client f66cfc2a-0fa1-424d-917e-1e6a87becb93 connected. Total connections: 1
+2025-09-06 12:03:54,380 - main - INFO - Client f66cfc2a-0fa1-424d-917e-1e6a87becb93 disconnected. Total connections: 0
+2025-09-06 12:03:54,470 - main - INFO - Shutting down application...
+2025-09-06 12:03:54,470 - main - INFO - Database notification listener stopped
+2025-09-06 12:03:54,472 - main - INFO - Database pool closed
+2025-09-06 12:03:54,472 - main - INFO - Application shutdown complete
+2025-09-06 12:03:58,377 - main - INFO - Starting application...
+2025-09-06 12:03:58,402 - main - INFO - Database pool created: 5-20 connections
+2025-09-06 12:03:58,425 - main - INFO - Database connection successful and tables verified
+2025-09-06 12:03:58,428 - main - INFO - Initialized listener with last_processed_id: 0
+2025-09-06 12:03:58,428 - main - INFO - Application startup complete
+2025-09-06 12:03:58,428 - main - INFO - Starting database notification listener
+2025-09-06 12:03:58,460 - main - INFO - Client e7dda790-6a33-4e94-abd3-33a884906581 connected. Total connections: 1
+2025-09-06 13:12:58,046 - main - INFO - Client e7dda790-6a33-4e94-abd3-33a884906581 disconnected. Total connections: 0
+2025-09-06 16:15:37,896 - main - INFO - Client 9893cc3b-4eaa-4ea7-be15-fd83b329f29e connected. Total connections: 1
+2025-09-06 16:23:02,269 - main - INFO - Client 9893cc3b-4eaa-4ea7-be15-fd83b329f29e disconnected. Total connections: 0
+2025-09-06 17:24:45,666 - main - INFO - Shutting down application...
+2025-09-06 17:24:45,672 - main - INFO - Database notification listener stopped
+2025-09-06 17:24:45,674 - main - INFO - Database pool closed
+2025-09-06 17:24:45,698 - main - INFO - Application shutdown complete
+2025-09-06 17:24:52,462 - main - INFO - Starting application...
+2025-09-06 17:24:52,488 - main - INFO - Database pool created: 5-20 connections
+2025-09-06 17:24:52,576 - main - INFO - Database connection successful and tables verified
+2025-09-06 17:24:52,584 - main - INFO - Initialized listener with last_processed_id: 0
+2025-09-06 17:24:52,584 - main - INFO - Application startup complete
+2025-09-06 17:24:52,600 - main - INFO - Starting database notification listener
+2025-09-06 19:49:43,336 - main - INFO - Shutting down application...
+2025-09-06 19:49:43,337 - main - INFO - Database notification listener stopped
+2025-09-06 19:49:43,337 - main - INFO - Database pool closed
+2025-09-06 19:49:43,338 - main - INFO - Application shutdown complete
+2025-09-06 19:49:45,324 - main - INFO - Starting application...
+2025-09-06 19:49:45,356 - main - INFO - Database pool created: 5-20 connections
+2025-09-06 19:49:45,367 - main - INFO - Database connection successful and tables verified
+2025-09-06 19:49:45,369 - main - INFO - Initialized listener with last_processed_id: 0
+2025-09-06 19:49:45,369 - main - INFO - Application startup complete
+2025-09-06 19:49:45,369 - main - INFO - Starting database notification listener
+2025-09-06 19:49:48,410 - main - INFO - Shutting down application...
+2025-09-06 19:49:48,412 - main - INFO - Database notification listener stopped
+2025-09-06 19:49:48,413 - main - INFO - Database pool closed
+2025-09-06 19:49:48,413 - main - INFO - Application shutdown complete
+2025-09-06 19:49:50,756 - main - INFO - Starting application...
+2025-09-06 19:49:50,786 - main - INFO - Database pool created: 5-20 connections
+2025-09-06 19:49:50,796 - main - INFO - Database connection successful and tables verified
+2025-09-06 19:49:50,803 - main - INFO - Initialized listener with last_processed_id: 0
+2025-09-06 19:49:50,803 - main - INFO - Application startup complete
+2025-09-06 19:49:50,803 - main - INFO - Starting database notification listener
+2025-09-06 20:15:47,028 - main - INFO - Shutting down application...
+2025-09-06 20:15:47,030 - main - INFO - Database notification listener stopped
+2025-09-06 20:15:47,030 - main - INFO - Database pool closed
+2025-09-06 20:15:47,030 - main - INFO - Application shutdown complete
+2025-09-06 20:15:47,782 - main - INFO - Starting application...
+2025-09-06 20:15:47,806 - main - INFO - Database pool created: 5-20 connections
+2025-09-06 20:15:47,816 - main - INFO - Database connection successful and tables verified
+2025-09-06 20:15:47,817 - main - INFO - Initialized listener with last_processed_id: 0
+2025-09-06 20:15:47,817 - main - INFO - Application startup complete
+2025-09-06 20:15:47,818 - main - INFO - Starting database notification listener
+2025-09-06 20:15:47,848 - main - INFO - Shutting down application...
+2025-09-06 20:15:47,848 - main - INFO - Database notification listener stopped
+2025-09-06 20:15:47,849 - main - INFO - Database pool closed
+2025-09-06 20:15:47,849 - main - INFO - Application shutdown complete
+2025-09-06 20:15:48,693 - main - INFO - Starting application...
+2025-09-06 20:15:48,712 - main - INFO - Database pool created: 5-20 connections
+2025-09-06 20:15:48,726 - main - INFO - Database connection successful and tables verified
+2025-09-06 20:15:48,728 - main - INFO - Initialized listener with last_processed_id: 0
+2025-09-06 20:15:48,728 - main - INFO - Application startup complete
+2025-09-06 20:15:48,729 - main - INFO - Starting database notification listener
+2025-09-06 20:16:45,506 - main - INFO - Shutting down application...
+2025-09-06 20:16:45,507 - main - INFO - Database notification listener stopped
+2025-09-06 20:16:45,507 - main - INFO - Database pool closed
+2025-09-06 20:16:45,507 - main - INFO - Application shutdown complete
+2025-09-06 20:44:39,030 - main - INFO - Starting application...
+2025-09-06 20:44:39,052 - main - INFO - Database pool created: 5-20 connections
+2025-09-06 20:44:39,063 - main - INFO - Database connection successful and tables verified
+2025-09-06 20:44:39,064 - main - INFO - Application startup complete
+2025-09-06 20:44:39,083 - main - INFO - Shutting down application...
+2025-09-06 20:44:39,083 - main - INFO - Database pool closed
+2025-09-06 20:44:39,083 - main - INFO - Application shutdown complete
+2025-09-06 20:44:39,898 - main - INFO - Starting application...
+2025-09-06 20:44:39,917 - main - INFO - Database pool created: 5-20 connections
+2025-09-06 20:44:39,925 - main - INFO - Database connection successful and tables verified
+2025-09-06 20:44:39,926 - main - INFO - Application startup complete
+2025-09-06 23:44:06,632 - main - INFO - Starting application...
+2025-09-06 23:44:06,686 - main - INFO - Database pool created: 5-20 connections
+2025-09-06 23:44:06,822 - main - INFO - Database connection successful and tables verified
+2025-09-06 23:44:06,823 - main - INFO - Application startup complete
+2025-09-06 23:44:39,354 - main - INFO - Shutting down application...
+2025-09-06 23:44:39,354 - main - INFO - Database pool closed
+2025-09-06 23:44:39,356 - main - INFO - Application shutdown complete
+2025-09-06 23:44:40,336 - main - INFO - Starting application...
+2025-09-06 23:44:40,380 - main - INFO - Database pool created: 5-20 connections
+2025-09-06 23:44:40,401 - main - INFO - Database connection successful and tables verified
+2025-09-06 23:44:40,401 - main - INFO - Application startup complete
+2025-09-06 23:44:50,469 - main - INFO - Shutting down application...
+2025-09-06 23:44:50,470 - main - INFO - Database pool closed
+2025-09-06 23:44:50,470 - main - INFO - Application shutdown complete
+2025-09-06 23:45:45,833 - main - INFO - Starting application...
+2025-09-06 23:45:45,876 - main - INFO - Database pool created: 5-20 connections
+2025-09-06 23:45:45,894 - main - INFO - Database connection successful and tables verified
+2025-09-06 23:45:45,896 - main - INFO - Application startup complete
+2025-09-06 23:48:58,192 - main - INFO - Shutting down application...
+2025-09-06 23:48:58,192 - main - INFO - Database pool closed
+2025-09-06 23:48:58,193 - main - INFO - Application shutdown complete
+2025-09-06 23:48:59,490 - main - INFO - Starting application...
+2025-09-06 23:48:59,543 - main - INFO - Database pool created: 5-20 connections
+2025-09-06 23:48:59,563 - main - INFO - Database connection successful and tables verified
+2025-09-06 23:48:59,564 - main - INFO - Application startup complete
+2025-09-06 23:49:15,667 - main - INFO - Shutting down application...
+2025-09-06 23:49:15,668 - main - INFO - Database pool closed
+2025-09-06 23:49:15,668 - main - INFO - Application shutdown complete
+2025-09-06 23:49:16,607 - main - INFO - Starting application...
+2025-09-06 23:49:16,645 - main - INFO - Database pool created: 5-20 connections
+2025-09-06 23:49:16,662 - main - INFO - Database connection successful and tables verified
+2025-09-06 23:49:16,662 - main - INFO - Application startup complete
+2025-09-06 23:53:22,841 - main - INFO - Shutting down application...
+2025-09-06 23:53:22,841 - main - INFO - Database pool closed
+2025-09-06 23:53:22,841 - main - INFO - Application shutdown complete
+2025-09-06 23:53:23,807 - main - INFO - Starting application...
+2025-09-06 23:53:23,853 - main - INFO - Database pool created: 5-20 connections
+2025-09-06 23:53:23,873 - main - INFO - Database connection successful and tables verified
+2025-09-06 23:53:23,873 - main - INFO - Application startup complete
+2025-09-07 00:14:09,276 - main - INFO - Client 7d6f69f3-8a97-476e-a9ba-958901cda56a connected. Total connections: 1
+2025-09-07 00:14:09,291 - main - ERROR - Error fetching stats: 'cryptography' package is required for sha256_password or caching_sha2_password auth methods
+2025-09-07 00:14:15,515 - main - ERROR - Error creating order: 'cryptography' package is required for sha256_password or caching_sha2_password auth methods
+2025-09-07 00:16:00,174 - main - INFO - Client 7d6f69f3-8a97-476e-a9ba-958901cda56a disconnected. Total connections: 0
+2025-09-07 00:16:00,267 - main - INFO - Shutting down application...
+2025-09-07 00:16:00,268 - main - INFO - Database pool closed
+2025-09-07 00:16:00,268 - main - INFO - Application shutdown complete
+2025-09-07 00:16:32,555 - main - INFO - Starting application...
+2025-09-07 00:16:32,672 - main - INFO - Database pool created: 5-20 connections
+2025-09-07 00:16:32,783 - main - INFO - Database connection successful and tables verified
+2025-09-07 00:16:32,784 - main - INFO - Application startup complete
+2025-09-07 00:16:43,566 - main - INFO - Client f91c5032-9841-4389-9e2a-e6535a5e7dca connected. Total connections: 1
+2025-09-07 00:18:41,337 - main - INFO - Client b9954465-b70c-4dc3-8cb9-189b7a531b97 connected. Total connections: 2
+2025-09-07 00:18:41,353 - main - ERROR - Error fetching stats: name 'notification_listener' is not defined
+2025-09-07 00:18:43,109 - main - INFO - Client f91c5032-9841-4389-9e2a-e6535a5e7dca disconnected. Total connections: 1
+2025-09-07 00:18:44,626 - main - INFO - Order 2 created successfully
+2025-09-07 00:23:49,229 - main - INFO - Client b9954465-b70c-4dc3-8cb9-189b7a531b97 disconnected. Total connections: 0
+2025-09-07 00:23:49,336 - main - INFO - Shutting down application...
+2025-09-07 00:23:49,337 - main - INFO - Database pool closed
+2025-09-07 00:23:49,337 - main - INFO - Application shutdown complete
+2025-09-07 00:26:14,897 - main - INFO - Starting application...
+2025-09-07 00:26:14,966 - main - INFO - Database pool created: 5-20 connections
+2025-09-07 00:26:14,982 - main - INFO - Database connection successful and tables verified
+2025-09-07 00:26:14,983 - main - INFO - Application startup complete
+2025-09-07 00:26:44,563 - main - INFO - Client db869354-672b-4ce9-bff9-546a27594142 connected. Total connections: 1
+2025-09-07 00:33:40,073 - main - INFO - Client db869354-672b-4ce9-bff9-546a27594142 disconnected. Total connections: 0
+2025-09-07 00:33:44,430 - main - INFO - Client 1a31adfb-34bf-4ca6-bc60-98c8d78b738e connected. Total connections: 1
+2025-09-07 00:34:47,357 - main - INFO - Client 1a31adfb-34bf-4ca6-bc60-98c8d78b738e disconnected. Total connections: 0
+2025-09-07 00:34:47,997 - main - INFO - Client 38eef0be-d529-486b-bd5f-a27311bb2023 connected. Total connections: 1
+2025-09-07 00:37:24,042 - main - INFO - Order 4 created successfully
+2025-09-07 00:37:49,596 - main - INFO - Client 38eef0be-d529-486b-bd5f-a27311bb2023 disconnected. Total connections: 0
+2025-09-07 00:37:50,238 - main - INFO - Client 236bdb56-657c-410d-b2e3-03ec6007b9a3 connected. Total connections: 1
+2025-09-07 00:38:00,080 - main - INFO - Order 5 created successfully
+2025-09-07 00:41:33,852 - main - INFO - Order 6 created successfully
+2025-09-07 00:52:42,625 - main - INFO - Client 236bdb56-657c-410d-b2e3-03ec6007b9a3 disconnected. Total connections: 0
+2025-09-07 01:04:25,753 - main - INFO - Shutting down application...
+2025-09-07 01:04:25,754 - main - INFO - Database pool closed
+2025-09-07 01:04:25,754 - main - INFO - Application shutdown complete
+2025-09-07 01:04:35,026 - main - INFO - Starting application...
+2025-09-07 01:04:35,091 - main - INFO - Database pool created: 5-20 connections
+2025-09-07 01:04:35,221 - main - INFO - Database connection successful and tables verified
+2025-09-07 01:04:35,222 - main - INFO - Application startup complete
+2025-09-07 01:10:39,953 - main - INFO - Order 2 created successfully
+2025-09-07 10:11:09,332 - main - INFO - Shutting down application...
+2025-09-07 10:11:09,334 - main - INFO - Database pool closed
+2025-09-07 10:11:09,334 - main - INFO - Application shutdown complete
+2025-09-07 10:12:22,187 - main - INFO - Starting application...
+2025-09-07 10:12:22,253 - main - INFO - Database pool created: 5-20 connections
+2025-09-07 10:12:22,340 - main - INFO - Database connection successful and tables verified
+2025-09-07 10:12:22,341 - main - INFO - Application startup complete
+2025-09-07 10:16:07,164 - main - ERROR - Error creating order: 'OrderUpdate' object has no attribute 'customer_name'
+2025-09-07 10:17:05,680 - main - ERROR - Error creating order: 'OrderUpdate' object has no attribute 'customer_name'
+2025-09-07 10:18:32,123 - main - INFO - Shutting down application...
+2025-09-07 10:18:32,123 - main - INFO - Database pool closed
+2025-09-07 10:18:32,124 - main - INFO - Application shutdown complete
+2025-09-07 10:20:05,169 - main - INFO - Starting application...
+2025-09-07 10:20:05,231 - main - INFO - Database pool created: 5-20 connections
+2025-09-07 10:20:05,267 - main - INFO - Database connection successful and tables verified
+2025-09-07 10:20:05,267 - main - INFO - Application startup complete
+2025-09-07 10:25:59,302 - main - INFO - Order 2 updated successfully
+2025-09-07 11:40:26,464 - main - INFO - Order 1 updated successfully
+2025-09-07 11:42:04,539 - main - INFO - Shutting down application...
+2025-09-07 11:42:04,539 - main - INFO - Database pool closed
+2025-09-07 11:42:04,539 - main - INFO - Application shutdown complete

@@ -1,0 +1,17 @@
+{
+  "name": "orders-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+    "topic.prefix": "dbserver",
+    "database.hostname": "mysql",
+    "database.port": "3306",
+    "database.user": "root",
+    "database.password": "supersecret99",
+    "database.allowPublicKeyRetrieval": "true",
+    "database.server.id": "1",
+    "database.include.list": "realtime_orders",
+    "table.include.list": "realtime_orders.orders",
+    "schema.history.internal.kafka.bootstrap.servers": "kafka:9092",
+    "schema.history.internal.kafka.topic": "dbhistory.orders"
+  }
+}

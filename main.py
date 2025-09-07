@@ -17,6 +17,25 @@ from pydantic import BaseModel, Field, validator
 import aiomysql
 from aiomysql import Pool
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# --- NEW DEBUG BLOCK ---
+# Check if the DB_PASSWORD was loaded and exit if not
+db_password = os.getenv('DB_PASSWORD')
+if not db_password:
+    # This message will definitely print to the terminal
+    print("\n--- FATAL ERROR ---")
+    print("The DB_PASSWORD environment variable was not loaded.")
+    print("Please check that the 'db.env' file exists, is named correctly, and contains the DB_PASSWORD line.")
+    print("-------------------\n")
+    sys.exit(1) # Exit the application immediately
+else:
+    # This will only print if the password WAS found
+    print("\n--- SUCCESS: DB_PASSWORD loaded. ---")
+
 # Configure structured logging
 logging.basicConfig(
     level=logging.INFO,
@@ -199,212 +218,8 @@ class DatabasePool:
 # Global database pool
 db_pool = DatabasePool()
 
-class DatabaseNotificationListener:
-    """Enhanced database notification listener with batching and retry logic"""
-    
-    def __init__(self):
-        self.last_processed_id = 0
-        self.running = False
-        self.retry_count = 0
-        self.max_retries = 5
-        self.batch_processor_task = None
-        self.notification_queue = asyncio.Queue()
-    
-    async def initialize(self):
-        """Initialize the listener by getting the last processed ID"""
-        try:
-            pool = db_pool.get_pool()
-            async with pool.acquire() as conn:
-                async with conn.cursor(aiomysql.DictCursor) as cursor:
-                    await cursor.execute("SELECT MAX(id) as max_id FROM order_notifications")
-                    result = await cursor.fetchone()
-                    self.last_processed_id = result['max_id'] or 0
-                    logger.info(f"Initialized listener with last_processed_id: {self.last_processed_id}")
-        except Exception as e:
-            logger.error(f"Failed to initialize listener: {e}")
-            raise
-    
-    async def start_listening(self):
-        """Start the notification listener with batch processing"""
-        self.running = True
-        logger.info("Starting database notification listener")
-        
-        # Start batch processor
-        self.batch_processor_task = asyncio.create_task(self._batch_processor())
-        
-        while self.running:
-            try:
-                await self._poll_notifications()
-                self.retry_count = 0  # Reset retry count on successful poll
-                await asyncio.sleep(config.POLL_INTERVAL)
-            except Exception as e:
-                self.retry_count += 1
-                logger.error(f"Error in notification listener (attempt {self.retry_count}): {e}")
-                
-                if self.retry_count >= self.max_retries:
-                    logger.critical("Max retries reached. Stopping notification listener.")
-                    break
-                
-                # Exponential backoff
-                wait_time = min(2 ** self.retry_count, 30)
-                await asyncio.sleep(wait_time)
-    
-    async def _poll_notifications(self):
-        """Poll for new notifications with batching"""
-        try:
-            pool = db_pool.get_pool()
-            async with pool.acquire() as conn:
-                async with conn.cursor(aiomysql.DictCursor) as cursor:
-                    await cursor.execute("""
-                        SELECT * FROM order_notifications 
-                        WHERE id > %s 
-                        ORDER BY id ASC 
-                        LIMIT %s
-                    """, (self.last_processed_id, config.MAX_BATCH_SIZE))
-                    
-                    notifications = await cursor.fetchall()
-                    
-                    for notification in notifications:
-                        await self.notification_queue.put(notification)
-                        self.last_processed_id = notification['id']
-        
-        except Exception as e:
-            logger.error(f"Database polling error: {e}")
-            raise
-    
-    async def _batch_processor(self):
-        """Process notifications in batches for better performance"""
-        batch = []
-        batch_timeout = 0.05  # 50ms batch timeout
-        
-        while self.running:
-            try:
-                # Collect notifications for batch processing
-                try:
-                    notification = await asyncio.wait_for(
-                        self.notification_queue.get(), timeout=batch_timeout
-                    )
-                    batch.append(notification)
-                    
-                    # Process batch if it reaches optimal size or queue is empty
-                    if len(batch) >= 10 or self.notification_queue.empty():
-                        await self._process_notification_batch(batch)
-                        batch.clear()
-                        
-                except asyncio.TimeoutError:
-                    # Process any pending notifications in batch
-                    if batch:
-                        await self._process_notification_batch(batch)
-                        batch.clear()
-                        
-            except Exception as e:
-                logger.error(f"Error in batch processor: {e}")
-                await asyncio.sleep(1)
-    
-    async def _process_notification_batch(self, notifications: List[dict]):
-        """Process a batch of notifications"""
-        if not notifications:
-            return
-            
-        try:
-            messages = []
-            for notification in notifications:
-                message = await self._create_notification_message(notification)
-                if message:
-                    messages.append(message)
-            
-            # Broadcast all messages
-            for message in messages:
-                await manager.broadcast(message)
-                
-            logger.debug(f"Processed batch of {len(messages)} notifications")
-            
-        except Exception as e:
-            logger.error(f"Error processing notification batch: {e}")
-    
-    async def _create_notification_message(self, notification: dict) -> Optional[dict]:
-        """Create a formatted notification message"""
-        try:
-            old_data = json.loads(notification['old_data']) if notification['old_data'] else None
-            new_data = json.loads(notification['new_data']) if notification['new_data'] else None
-            
-            message = {
-                'event_type': 'order_change',
-                'action': notification['action'],
-                'order_id': notification['order_id'],
-                'timestamp': notification['created_at'].isoformat(),
-                'old_data': old_data,
-                'new_data': new_data,
-                'change_id': notification['id']  # Add unique change identifier
-            }
-            
-            return message
-            
-        except Exception as e:
-            logger.error(f"Error creating notification message: {e}")
-            return None
-    
-    def stop(self):
-        """Stop the notification listener"""
-        self.running = False
-        if self.batch_processor_task:
-            self.batch_processor_task.cancel()
-        logger.info("Database notification listener stopped")
 
 # Global notification listener
-notification_listener = None
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Enhanced application lifecycle management"""
-    global notification_listener
-    
-    # Startup
-    try:
-        logger.info("Starting application...")
-        
-        # Initialize database pool
-        await db_pool.create_pool()
-        
-        # Test database connection
-        await test_database_connection()
-        
-        # Initialize and start notification listener
-        notification_listener = DatabaseNotificationListener()
-        await notification_listener.initialize()
-        listener_task = asyncio.create_task(notification_listener.start_listening())
-        
-        # Start connection cleanup task
-        cleanup_task = asyncio.create_task(periodic_cleanup())
-        
-        logger.info("Application startup complete")
-        
-        yield
-        
-    except Exception as e:
-        logger.error(f"Startup error: {e}")
-        raise
-    
-    # Shutdown
-    finally:
-        logger.info("Shutting down application...")
-        
-        if notification_listener:
-            notification_listener.stop()
-        
-        # Cancel background tasks
-        for task in [listener_task, cleanup_task]:
-            if not task.done():
-                task.cancel()
-                try:
-                    await task
-                except asyncio.CancelledError:
-                    pass
-        
-        # Close database pool
-        await db_pool.close_pool()
-        
-        logger.info("Application shutdown complete")
 
 async def test_database_connection():
     """Test database connection and create tables if needed"""
@@ -448,6 +263,8 @@ async def test_database_connection():
         logger.error(f"Database connection test failed: {e}")
         raise
 
+# PASTE THIS NEW CODE IN ITS PLACE
+
 async def periodic_cleanup():
     """Periodic cleanup of stale connections and old notifications"""
     while True:
@@ -457,27 +274,49 @@ async def periodic_cleanup():
             # Cleanup stale WebSocket connections
             await manager.cleanup_stale_connections()
             
-            # Cleanup old notifications (keep last 10000)
-            pool = db_pool.get_pool()
-            async with pool.acquire() as conn:
-                async with conn.cursor() as cursor:
-                    await cursor.execute("""
-                        DELETE FROM order_notifications 
-                        WHERE id < (
-                            SELECT id FROM (
-                                SELECT id FROM order_notifications 
-                                ORDER BY id DESC LIMIT 1 OFFSET 10000
-                            ) AS subquery
-                        )
-                    """)
-                    
-                    if cursor.rowcount > 0:
-                        logger.info(f"Cleaned up {cursor.rowcount} old notifications")
-                        
+            # NOTE: The old notification cleanup is removed because the 
+            # order_notifications table is no longer used in the new system.
+            
         except Exception as e:
             logger.error(f"Periodic cleanup error: {e}")
 
+
+# This is the corrected lifespan function, placed before 'app = FastAPI(...)'
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifecycle management for database connections and cleanup."""
+    # Startup
+    try:
+        logger.info("Starting application...")
+        await db_pool.create_pool()
+        await test_database_connection()
+        cleanup_task = asyncio.create_task(periodic_cleanup())
+        logger.info("Application startup complete")
+        
+        yield
+        
+    except Exception as e:
+        logger.error(f"Startup error: {e}")
+        raise
+    
+    # Shutdown
+    finally:
+        logger.info("Shutting down application...")
+        
+        # Check if cleanup_task was created before trying to cancel it
+        if 'cleanup_task' in locals() and not cleanup_task.done():
+            cleanup_task.cancel()
+            try:
+                await cleanup_task
+            except asyncio.CancelledError:
+                pass
+        
+        await db_pool.close_pool()
+        logger.info("Application shutdown complete")
+
+
 # FastAPI app with enhanced configuration
+# This now correctly uses the lifespan function defined above
 app = FastAPI(
     title="Real-time Order Notifications System",
     description="High-performance real-time order tracking with WebSocket notifications",
@@ -566,7 +405,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
 # Enhanced REST API endpoints
 @app.post("/api/orders", response_model=dict)
-async def create_order(order: OrderCreate):
+async def create_order(order: OrderUpdate):
     """Create a new order"""
     try:
         pool = db_pool.get_pool()
@@ -590,6 +429,9 @@ async def create_order(order: OrderCreate):
         logger.error(f"Error creating order: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+#
+# --- REPLACE YOUR ENTIRE update_order FUNCTION WITH THIS ---
+#
 @app.put("/api/orders/{order_id}", response_model=dict)
 async def update_order(order_id: int, order: OrderUpdate):
     """Update an existing order"""
@@ -604,7 +446,7 @@ async def update_order(order_id: int, order: OrderUpdate):
                 if not existing_order:
                     raise HTTPException(status_code=404, detail="Order not found")
                 
-                # Update order
+                # Corrected execute call: only uses order.status
                 await cursor.execute("""
                     UPDATE orders SET status = %s, updated_at = CURRENT_TIMESTAMP 
                     WHERE id = %s
@@ -690,15 +532,14 @@ async def get_system_stats():
                 """)
                 order_stats = {row['status']: row['count'] for row in await cursor.fetchall()}
                 
-                # Get notification count
-                await cursor.execute("SELECT COUNT(*) as count FROM order_notifications")
-                notification_count = (await cursor.fetchone())['count']
+                # This value is no longer relevant with Kafka, so we can remove it
+                # await cursor.execute("SELECT COUNT(*) as count FROM order_notifications")
+                # notification_count = (await cursor.fetchone())['count']
         
         return {
             "connections": connection_stats,
-            "orders": order_stats,
-            "total_notifications": notification_count,
-            "last_processed_notification_id": notification_listener.last_processed_id if notification_listener else 0
+            "orders": order_stats
+            # "total_notifications" can be removed as it's not displayed on the new UI
         }
         
     except Exception as e:
@@ -1247,3 +1088,13 @@ async def get_dashboard():
 </body>
 </html>
     """)
+
+# Add this new endpoint to main.py
+@app.post("/internal/broadcast")
+async def internal_broadcast(message: dict):
+    """
+    An internal endpoint for the Kafka consumer to send messages
+    that need to be broadcasted to all WebSocket clients.
+    """
+    await manager.broadcast(message)
+    return {"status": "message broadcasted"}
