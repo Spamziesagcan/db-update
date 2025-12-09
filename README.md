@@ -459,4 +459,4 @@ This project is open source and free to use under the MIT License.
 
 ---
 
-Thank you for reviewing this project. For questions or suggestions, please contact [Your Name] or check the source repository.
+Thank you for reviewing this project. For questions or suggestions, please contact meor check the source repository.
