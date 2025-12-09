@@ -346,3 +346,65 @@
 2025-09-07 11:42:04,539 - main - INFO - Shutting down application...
 2025-09-07 11:42:04,539 - main - INFO - Database pool closed
 2025-09-07 11:42:04,539 - main - INFO - Application shutdown complete
+2025-12-09 11:21:12,888 - main - INFO - Starting application...
+2025-12-09 11:21:12,919 - main - INFO - Database pool created: 5-20 connections
+2025-12-09 11:21:12,937 - main - INFO - Database connection successful and tables verified
+2025-12-09 11:21:12,937 - main - INFO - Application startup complete
+2025-12-09 11:26:08,316 - main - INFO - Order 56 created successfully
+2025-12-09 11:27:59,254 - main - INFO - Order 1 updated successfully
+2025-12-09 11:29:42,860 - main - INFO - Order 56 deleted successfully
+2025-12-09 11:30:00,023 - main - INFO - Order 54 deleted successfully
+2025-12-09 11:30:04,199 - main - INFO - Order 4 deleted successfully
+2025-12-09 11:30:25,496 - main - INFO - Order 50 deleted successfully
+2025-12-09 11:30:28,871 - main - INFO - Order 51 deleted successfully
+2025-12-09 11:30:30,642 - main - INFO - Order 52 deleted successfully
+2025-12-09 11:30:32,174 - main - INFO - Order 53 deleted successfully
+2025-12-09 11:30:33,677 - main - INFO - Order 55 deleted successfully
+2025-12-09 11:31:10,658 - main - INFO - Order 1 deleted successfully
+2025-12-09 11:31:12,363 - main - INFO - Order 2 deleted successfully
+2025-12-09 11:31:13,591 - main - INFO - Order 3 deleted successfully
+2025-12-09 11:31:16,643 - main - INFO - Order 5 deleted successfully
+2025-12-09 11:31:17,944 - main - INFO - Order 6 deleted successfully
+2025-12-09 11:31:19,491 - main - INFO - Order 7 deleted successfully
+2025-12-09 11:31:20,807 - main - INFO - Order 8 deleted successfully
+2025-12-09 11:31:23,473 - main - INFO - Order 9 deleted successfully
+2025-12-09 11:31:27,737 - main - INFO - Order 10 deleted successfully
+2025-12-09 11:31:30,058 - main - INFO - Order 11 deleted successfully
+2025-12-09 11:31:31,878 - main - INFO - Order 12 deleted successfully
+2025-12-09 11:31:33,593 - main - INFO - Order 13 deleted successfully
+2025-12-09 11:31:35,159 - main - INFO - Order 14 deleted successfully
+2025-12-09 11:31:36,459 - main - INFO - Order 15 deleted successfully
+2025-12-09 11:31:38,012 - main - INFO - Order 16 deleted successfully
+2025-12-09 11:31:39,558 - main - INFO - Order 17 deleted successfully
+2025-12-09 11:31:40,650 - main - INFO - Order 18 deleted successfully
+2025-12-09 11:31:42,333 - main - INFO - Order 19 deleted successfully
+2025-12-09 11:31:44,360 - main - INFO - Order 20 deleted successfully
+2025-12-09 11:31:45,648 - main - INFO - Order 21 deleted successfully
+2025-12-09 11:31:46,723 - main - INFO - Order 22 deleted successfully
+2025-12-09 11:31:48,009 - main - INFO - Order 23 deleted successfully
+2025-12-09 11:31:49,397 - main - INFO - Order 24 deleted successfully
+2025-12-09 11:31:50,794 - main - INFO - Order 25 deleted successfully
+2025-12-09 11:31:52,479 - main - INFO - Order 26 deleted successfully
+2025-12-09 11:31:53,859 - main - INFO - Order 27 deleted successfully
+2025-12-09 11:31:56,167 - main - INFO - Order 28 deleted successfully
+2025-12-09 11:31:57,572 - main - INFO - Order 29 deleted successfully
+2025-12-09 11:31:59,447 - main - INFO - Order 30 deleted successfully
+2025-12-09 11:32:00,761 - main - INFO - Order 31 deleted successfully
+2025-12-09 11:32:01,892 - main - INFO - Order 32 deleted successfully
+2025-12-09 11:32:05,661 - main - INFO - Order 35 deleted successfully
+2025-12-09 11:32:09,457 - main - INFO - Order 37 deleted successfully
+2025-12-09 11:32:10,832 - main - INFO - Order 38 deleted successfully
+2025-12-09 11:32:12,146 - main - INFO - Order 39 deleted successfully
+2025-12-09 11:32:14,655 - main - INFO - Order 40 deleted successfully
+2025-12-09 11:32:15,969 - main - INFO - Order 41 deleted successfully
+2025-12-09 11:32:17,538 - main - INFO - Order 42 deleted successfully
+2025-12-09 11:32:19,573 - main - INFO - Order 43 deleted successfully
+2025-12-09 11:32:20,784 - main - INFO - Order 44 deleted successfully
+2025-12-09 11:32:21,843 - main - INFO - Order 45 deleted successfully
+2025-12-09 11:32:22,681 - main - INFO - Order 46 deleted successfully
+2025-12-09 11:32:23,576 - main - INFO - Order 47 deleted successfully
+2025-12-09 11:32:25,222 - main - INFO - Order 48 deleted successfully
+2025-12-09 11:32:26,657 - main - INFO - Order 49 deleted successfully
+2025-12-09 11:32:43,021 - main - INFO - Shutting down application...
+2025-12-09 11:32:43,022 - main - INFO - Database pool closed
+2025-12-09 11:32:43,022 - main - INFO - Application shutdown complete

@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 import requests
+from datetime import datetime
 from kafka import KafkaConsumer
 from dotenv import load_dotenv
 
@@ -13,9 +14,9 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # --- CONFIGURATION ---
-KAFKA_TOPIC = 'db_server.realtime_orders.orders' # Debezium topic name: server.database.table
+KAFKA_TOPIC = 'dbserver.realtime_orders.orders'  # Debezium topic name: server.database.table
 KAFKA_BROKERS = os.getenv('KAFKA_BROKERS', 'localhost:9092')
-API_WEBSOCKET_URL = "http://localhost:8000/internal/broadcast" # A new internal endpoint
+API_WEBSOCKET_URL = "http://localhost:8000/internal/broadcast"  # Internal endpoint for broadcasting
 
 def format_debezium_event(event: dict) -> dict:
     """Transforms a Debezium event into the format our frontend expects."""

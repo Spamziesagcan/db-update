@@ -1,6 +1,6 @@
 # Real-Time Order Notification System
 
-A real-time system that automatically notifies clients whenever data changes occur in the database using MySQL triggers, FastAPI, and WebSockets. This system ensures connected clients receive instantaneous updates on any inserts, updates, or deletes on the `orders` table without relying on frequent polling.
+A real-time system that automatically notifies clients whenever data changes occur in the database using Debezium, Kafka, FastAPI, and WebSockets. This system captures database changes through Change Data Capture (CDC) and ensures connected clients receive instantaneous updates on any inserts, updates, or deletes on the `orders` table without relying on frequent polling.
 
 ---
 
@@ -21,7 +21,7 @@ A real-time system that automatically notifies clients whenever data changes occ
 
 ## Project Overview
 
-This project implements a backend service that listens for database changes using MySQL triggers and notifies connected clients via WebSockets served by a FastAPI backend. Clients can be either a web dashboard or a CLI script, both receiving real-time updates about changes to orders.
+This project implements a backend service that listens for database changes using Debezium CDC (Change Data Capture) streaming to Kafka and notifies connected clients via WebSockets served by a FastAPI backend. Clients can be either a web dashboard or a CLI script, both receiving real-time updates about changes to orders.
 
 ---
 
@@ -33,14 +33,13 @@ Build a system where clients automatically receive updates whenever the data in 
 
 ## Architecture
 
-[MySQL DB] → [Triggers] → [Notification Table] → [FastAPI Poller] → [WebSocket Manager] → [Connected Clients]
+[MySQL DB] → [Debezium Connector] → [Kafka] → [Python Consumer] → [FastAPI] → [WebSocket Manager] → [Connected Clients]
 
-text
-
-- **MySQL DB:** Hosts the `orders` table and logs changes into a dedicated notification table via triggers.
-- **Triggers:** MySQL triggers tied to insert, update, delete operations populate the notification table.
-- **Notification Table:** Acts as a queue for backend to poll new change events.
-- **FastAPI Backend:** Polls notifications and manages WebSocket connections.
+- **MySQL DB:** Hosts the `orders` table. Changes are captured via binlog.
+- **Debezium Connector:** Reads MySQL binlog and publishes change events to Kafka topics.
+- **Kafka:** Message broker that streams database change events in real-time.
+- **Python Consumer:** Consumes Kafka messages and sends them to FastAPI via internal HTTP endpoint.
+- **FastAPI Backend:** Manages WebSocket connections and broadcasts notifications.
 - **WebSocket Manager:** Distributes notifications to clients in real-time.
 - **Clients:** Web dashboard or CLI apps display live updates.
 
@@ -50,78 +49,90 @@ text
 
 ### Why this approach?
 
-- **MySQL Triggers:** Immediate and reliable capture of changes inside the database, simple to implement for demos.
+- **Debezium CDC:** Captures database changes by reading MySQL binlog without adding overhead to write operations.
+- **Kafka:** Distributed event streaming platform that provides durability, scalability, and fault tolerance.
 - **FastAPI:** Async Python framework with excellent WebSocket support.
 - **WebSockets:** Persistent, two-way communication enabling real-time push without client-side polling.
-- **Polling (Backend-side):** Backend polls the notification table with low latency (~100ms) to detect DB changes efficiently.
+- **aiomysql:** Async MySQL connector for non-blocking database operations.
 
 ### Pros
 
 - Real-time updates without client polling.
-- Minimal external dependencies.
-- Simple to understand and debug.
-- Architecture emphasizes separation of concerns.
+- No performance impact on database writes (no triggers).
+- Scalable and production-ready architecture.
+- Event persistence in Kafka prevents data loss.
+- Decoupled architecture allows independent scaling of components.
+- Can replay events from Kafka for debugging or recovery.
 
 ### Cons
 
-- Triggers add some overhead to DB write operations.
-- Polling by backend introduces slight latency.
-- Requires database schema modification (notification table and triggers).
-- Not ideal for extremely high-frequency/high-scale applications without optimization.
+- More complex infrastructure (Kafka, Zookeeper, Debezium).
+- Higher resource requirements for running multiple services.
+- Requires understanding of event streaming concepts.
 
 ---
 
 ## Setup Instructions
 
-### 1. Database Setup
+### 1. Prerequisites
 
-- Run the provided SQL script to create `orders` and `order_notifications` tables, and define triggers:
+- Docker and Docker Compose installed
+- Python 3.8+ installed
+- Git installed
 
-mysql -u root -p < setup.sql
+### 2. Running the Project (Fork & Clone)
 
-text
+1. **Fork the repository** on GitHub to your own account.
 
-*(Make sure binary logging is enabled in your MySQL config for production scenarios)*
+2. **Clone your fork locally:**
+   ```bash
+   git clone https://github.com/<your-username>/db-update.git
+   cd db-update
+   ```
 
-### 2. Environment Setup
+3. **Create a `.env` file** with your database credentials:
+   ```env
+   DB_HOST=localhost
+   DB_USER=root
+   DB_PASSWORD=your_password
+   DB_NAME=realtime_orders
+   DB_PORT=3306
+   KAFKA_BROKERS=localhost:9092
+   ```
 
-- Install Python dependencies:
+4. **Start the infrastructure** (MySQL, Kafka, Zookeeper, Debezium):
+   ```bash
+   docker-compose up -d
+   ```
 
-pip install -r requirements.txt
+5. **Wait for services to start** (about 30 seconds), then configure the Debezium connector:
+   ```bash
+   curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" \
+     localhost:8083/connectors/ -d @debezium-connector.json
+   ```
 
-text
+6. **Install Python dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-- Configure database credentials in `.env` file:
+7. **Run the FastAPI backend:**
+   ```bash
+   uvicorn main:app --reload --port 8000
+   ```
 
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=your_password
-DB_NAME=realtime_orders
-DB_PORT=3306
+8. **In a separate terminal, run the Kafka consumer:**
+   ```bash
+   python consumer.py
+   ```
 
-text
+9. **Open the web dashboard:**
+   - Navigate to [http://localhost:8000](http://localhost:8000) in your browser to view real-time order updates.
 
-### 3. Running the Backend
-
-Start the FastAPI server:
-
-uvicorn main:app --reload --port 8000
-
-text
-
-### 4. Using the Web Dashboard
-
-- Navigate to [http://localhost:8000](http://localhost:8000) in a browser.
-- The page will display real-time order updates sent via WebSockets.
-- Use provided buttons to create, update, or delete orders for testing.
-
-### 5. Running the CLI Client (Optional)
-
-python client.py
-
-text
-
-This CLI client listens to real-time updates and prints messages on the terminal.
+10. **(Optional) Run the CLI client in another terminal:**
+    ```bash
+    python client.py
+    ```
 
 ---
 
@@ -166,29 +177,33 @@ Simulate multiple WebSocket clients to ensure backend handles connections proper
 
 ## Scalability and Production Improvements
 
-### Current Limitations
+### Current Architecture Benefits
 
-- Triggers cause extra DB write load.
-- Backend polling adds minor latency.
-- Single backend instance limits concurrency and fault tolerance.
-- No persistent message queue: lost messages if server crashes.
+- **Debezium CDC:** Already captures changes from binlog without database overhead.
+- **Kafka:** Provides durability and prevents message loss if the backend crashes.
+- **Event Sourcing:** All database changes are persisted in Kafka for replay and debugging.
 
 ### Recommended Enhancements
 
-1. **Binlog-based CDC:**
-   - Replace triggers with a MySQL binlog listener (e.g., `python-mysql-replication`).
-   - Capture all changes asynchronously without affecting DB performance.
+1. **Horizontal Scaling:**
+   - Deploy multiple FastAPI backend instances behind a load balancer.
+   - Use Redis Pub/Sub or Kafka consumer groups to coordinate message distribution across instances.
+   - Implement sticky sessions for WebSocket connections.
 
-2. **Message Queue Integration:**
-   - Stream notifications via Kafka, RabbitMQ, or Redis for durability and horizontal scaling.
-   - Decouple DB change capture from WebSocket delivery.
+2. **Kafka Optimizations:**
+   - Configure partitioning strategy for better load distribution.
+   - Enable message compression to reduce network bandwidth.
+   - Tune consumer settings for optimal throughput.
 
-3. **Horizontal Scaling:**
-   - Use load balancers and multiple backend instances.
-   - Share pub/sub WebSocket state with Redis or other coordination services.
-
-4. **Monitoring & Alerting:**
+3. **Monitoring & Alerting:**
    - Add observability on connection counts, message delivery, and errors.
+   - Monitor Kafka lag and consumer throughput.
+   - Set up alerts for connector failures or consumer lag.
+
+4. **High Availability:**
+   - Run Kafka and Zookeeper in clustered mode.
+   - Deploy multiple Debezium connector instances with failover.
+   - Implement circuit breakers for external service calls.
 
 ---
 
@@ -200,20 +215,21 @@ Polling clients create unnecessary network traffic and add latency depending on 
 
 ### How would you scale to 10,000+ clients?
 
-- Distribute WebSocket connections across multiple backend instances.
-- Use Redis or Kafka for message broadcasting.
-- Offload DB change detection to binlog CDC to avoid trigger overhead.
-- Employ load balancing with sticky sessions and horizontal scaling.
+- Distribute WebSocket connections across multiple backend instances with load balancing.
+- Use Kafka consumer groups to parallelize message processing.
+- Implement Redis Pub/Sub for cross-instance WebSocket broadcasting.
+- Deploy Kafka in clustered mode for high throughput.
+- Use sticky sessions or connection affinity for WebSocket routing.
 
 ### What if a client disconnects?
 
 - WebSocket manager cleans up disconnected clients to free resources.
 - Clients implement reconnection logic with exponential backoff.
-- Future improvements may buffer missed messages for guaranteed delivery.
+- Kafka retains messages based on retention policy, allowing clients to catch up on missed events.
 
-### Why use triggers instead of directly reading binlog?
+### Why use Debezium instead of MySQL triggers?
 
-Triggers are easier to implement as a demo without additional infrastructure or complex setups. For production, binlog reading is preferred for better performance and reliability.
+Debezium reads the MySQL binlog asynchronously, capturing all changes without adding overhead to database write operations. This approach is more performant, scalable, and production-ready compared to triggers, which execute synchronously with each write operation and can slow down the database.
 
 ---
 
