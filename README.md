@@ -74,13 +74,21 @@ Build a system where clients automatically receive updates whenever the data in 
 
 ## Setup Instructions
 
-### 1. Prerequisites
+Choose one of the following setup options based on whether you want to use Docker for MySQL or your existing MySQL installation.
+
+### Prerequisites
 
 - Docker and Docker Compose installed
 - Python 3.8+ installed
 - Git installed
 
-### 2. Running the Project (Fork & Clone)
+---
+
+## Option A: Using Docker MySQL (Recommended for Quick Start)
+
+This option runs everything in Docker containers including MySQL.
+
+### 1. Fork and Clone
 
 1. **Fork the repository** on GitHub to your own account.
 
@@ -90,49 +98,263 @@ Build a system where clients automatically receive updates whenever the data in 
    cd db-update
    ```
 
-3. **Create a `.env` file** with your database credentials:
-   ```env
-   DB_HOST=localhost
-   DB_USER=root
-   DB_PASSWORD=your_password
-   DB_NAME=realtime_orders
-   DB_PORT=3306
-   KAFKA_BROKERS=localhost:9092
-   ```
+### 2. Restore MySQL Service in Docker Compose
 
-4. **Start the infrastructure** (MySQL, Kafka, Zookeeper, Debezium):
+Edit `docker-compose.yml` and add the MySQL service back (if removed):
+```yaml
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    volumes:
+      - ./db_update.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  zookeeper:
+    # ... rest of services
+```
+
+### 3. Update Debezium Connector
+
+Edit `debezium-connector.json` and change hostname to `mysql`:
+```json
+{
+  "config": {
+    "database.hostname": "mysql",
+    ...
+  }
+}
+```
+
+### 4. Create Environment File
+
+Create a `.env` file:
+```env
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=realtime_orders
+DB_PORT=3306
+KAFKA_BROKERS=localhost:9092
+```
+
+### 5. Start All Services
+
+```bash
+docker-compose up -d
+```
+
+### 6. Configure Debezium Connector
+
+Wait 30 seconds for services to start, then:
+```bash
+curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" \
+  localhost:8083/connectors/ -d @debezium-connector.json
+```
+
+**Windows PowerShell:**
+```powershell
+Invoke-RestMethod -Uri "http://localhost:8083/connectors/" -Method Post -ContentType "application/json" -InFile "debezium-connector.json"
+```
+
+### 7. Set Up Python Environment
+
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: .\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+### 8. Run the Application
+
+**Terminal 1 - FastAPI Backend:**
+```bash
+uvicorn main:app --reload --port 8000
+```
+
+**Terminal 2 - Kafka Consumer:**
+```bash
+python consumer.py
+```
+
+### 9. Access Dashboard
+
+Navigate to [http://localhost:8000](http://localhost:8000)
+
+---
+
+## Option B: Using Existing MySQL Database
+
+This option uses your existing MySQL installation and only runs Kafka/Zookeeper/Debezium in Docker.
+
+### 1. Fork and Clone
+
+1. **Fork the repository** on GitHub to your own account.
+
+2. **Clone your fork locally:**
    ```bash
-   docker-compose up -d
+   git clone https://github.com/<your-username>/db-update.git
+   cd db-update
    ```
 
-5. **Wait for services to start** (about 30 seconds), then configure the Debezium connector:
-   ```bash
-   curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" \
-     localhost:8083/connectors/ -d @debezium-connector.json
-   ```
+### 2. Enable MySQL Binary Logging
 
-6. **Install Python dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+Debezium requires binlog to be enabled. Check if it's enabled:
+```sql
+SHOW VARIABLES LIKE 'log_bin';
+```
 
-7. **Run the FastAPI backend:**
-   ```bash
-   uvicorn main:app --reload --port 8000
-   ```
+If `OFF`, edit your MySQL configuration file (`my.ini` on Windows, `my.cnf` on Linux/Mac) and add:
+```ini
+[mysqld]
+log-bin=mysql-bin
+binlog_format=ROW
+binlog_row_image=FULL
+server-id=1
+```
 
-8. **In a separate terminal, run the Kafka consumer:**
-   ```bash
-   python consumer.py
-   ```
+Restart MySQL service:
+```bash
+# Windows
+Restart-Service MySQL80
 
-9. **Open the web dashboard:**
-   - Navigate to [http://localhost:8000](http://localhost:8000) in your browser to view real-time order updates.
+# Linux/Mac
+sudo systemctl restart mysql
+```
 
-10. **(Optional) Run the CLI client in another terminal:**
-    ```bash
-    python client.py
-    ```
+### 3. Create Database and Tables
+
+Run the SQL setup:
+```bash
+mysql -u root -p < db_update.sql
+```
+
+Or manually:
+```sql
+CREATE DATABASE IF NOT EXISTS realtime_orders;
+USE realtime_orders;
+
+CREATE TABLE IF NOT EXISTS orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_name VARCHAR(255) NOT NULL,
+    product_name VARCHAR(255) NOT NULL,
+    status ENUM('pending', 'shipped', 'delivered') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_status (status),
+    INDEX idx_updated_at (updated_at)
+);
+```
+
+### 4. Grant Debezium Permissions
+
+```sql
+GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'root'@'%';
+FLUSH PRIVILEGES;
+```
+
+### 5. Update Debezium Connector Configuration
+
+Edit `debezium-connector.json` with your MySQL password and set hostname:
+```json
+{
+  "name": "orders-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+    "topic.prefix": "dbserver",
+    "database.hostname": "host.docker.internal",
+    "database.port": "3306",
+    "database.user": "root",
+    "database.password": "YOUR_MYSQL_PASSWORD",
+    ...
+  }
+}
+```
+
+### 6. Create Environment File
+
+Create a `.env` file with your MySQL credentials:
+```env
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=YOUR_MYSQL_PASSWORD
+DB_NAME=realtime_orders
+DB_PORT=3306
+KAFKA_BROKERS=localhost:9092
+```
+
+### 7. Start Docker Services (Kafka, Zookeeper, Debezium only)
+
+The `docker-compose.yml` is already configured to exclude MySQL. Start services:
+```bash
+docker-compose up -d
+```
+
+### 8. Configure Debezium Connector
+
+Wait 30 seconds, then:
+```bash
+curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" \
+  localhost:8083/connectors/ -d @debezium-connector.json
+```
+
+**Windows PowerShell:**
+```powershell
+Invoke-RestMethod -Uri "http://localhost:8083/connectors/" -Method Post -ContentType "application/json" -InFile "debezium-connector.json"
+```
+
+### 9. Set Up Python Environment
+
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: .\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+### 10. Run the Application
+
+**Terminal 1 - FastAPI Backend:**
+```bash
+uvicorn main:app --reload --port 8000
+```
+
+**Terminal 2 - Kafka Consumer:**
+```bash
+python consumer.py
+```
+
+### 11. Access Dashboard
+
+Navigate to [http://localhost:8000](http://localhost:8000)
+
+---
+
+## Verification
+
+### Check Debezium Connector Status
+```bash
+curl http://localhost:8083/connectors/orders-connector/status
+```
+
+**PowerShell:**
+```powershell
+Invoke-RestMethod -Uri "http://localhost:8083/connectors/orders-connector/status"
+```
+
+### Check Docker Containers
+```bash
+docker ps
+```
+
+You should see: `zookeeper`, `kafka`, and `connect` (and optionally `mysql` if using Option A).
 
 ---
 
