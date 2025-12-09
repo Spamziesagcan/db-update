@@ -387,8 +387,6 @@ INSERT INTO orders (customer_name, product_name, status) VALUES ('TestUser', 'Pr
 UPDATE orders SET status = 'shipped' WHERE id = 1;
 DELETE FROM orders WHERE id = 1;
 
-text
-
 All changes trigger corresponding notifications to the clients.
 
 ### Load Testing (Optional)
