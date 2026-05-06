@@ -54,8 +54,19 @@ Use the provided `.env.example` for local development and inject real secrets fr
 | PUT | `/api/orders/{id}` | Update an order, requires `X-API-Key` |
 | DELETE | `/api/orders/{id}` | Delete an order, requires `X-API-Key` |
 | GET | `/api/stats` | Read system stats, requires `X-API-Key` |
+| GET | `/health/live` | Liveness probe for orchestration |
+| GET | `/health/ready` | Readiness probe for orchestration |
 | WS | `/ws` | Client websocket connection, requires API key |
 | POST | `/internal/broadcast` | Internal broadcast, requires `X-Internal-Token` |
+
+`/api/stats` now includes database pool gauges, websocket counts, Kafka consumer lag, and event delivery metrics so operators can inspect the current state without guessing.
+
+## Operations
+
+- Logs are emitted as structured JSON and include a request ID or correlation ID when available.
+- Readiness checks verify the database and background tasks before returning `200`.
+- Liveness checks report process uptime and are intended for simple orchestration probes.
+- See [OPERATIONS_RUNBOOKS.md](OPERATIONS_RUNBOOKS.md) for short incident guides.
 
 ## Testing
 

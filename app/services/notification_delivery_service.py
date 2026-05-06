@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import time
 import logging
 
 from pydantic import ValidationError
 
 from app.core.settings import Settings
+from app.core.observability import metrics, trace_span
 from app.models import InternalBroadcastMessage
 from app.repositories.notification_event_repository import (
     NotificationEventRepository,
@@ -28,63 +30,48 @@ class NotificationDeliveryService:
 
     async def dispatch_pending_events(self) -> int:
         delivered_events = 0
+        with trace_span("notification.dispatch.batch"):
+            while True:
+                started_at = time.perf_counter()
+                queued_events = await self.repository.claim_due_events(
+                    self.settings.notification_batch_size,
+                    self.settings.notification_processing_timeout_seconds,
+                )
+                metrics.observe_duration(
+                    "notification_dispatch_batch_wait_seconds",
+                    time.perf_counter() - started_at,
+                )
+                metrics.set_gauge("notification_dispatch_claimed_events", len(queued_events))
+                if not queued_events:
+                    break
 
-        while True:
-            queued_events = await self.repository.claim_due_events(
-                self.settings.notification_batch_size,
-                self.settings.notification_processing_timeout_seconds,
-            )
-            if not queued_events:
-                break
+                for queued_event in queued_events:
+                    if await self._deliver_event(queued_event):
+                        delivered_events += 1
 
-            for queued_event in queued_events:
-                if await self._deliver_event(queued_event):
-                    delivered_events += 1
-
+        metrics.set_gauge("notification_dispatch_last_delivered", delivered_events)
         return delivered_events
 
     async def get_delivery_stats(self) -> dict[str, object]:
         return await self.repository.get_delivery_stats()
 
     async def _deliver_event(self, queued_event: QueuedNotificationEvent) -> bool:
-        try:
-            message = InternalBroadcastMessage.model_validate_json(queued_event.payload_json)
-        except ValidationError as exc:
-            logger.warning(
-                "Queued notification %s failed validation and was quarantined",
-                queued_event.event_id,
-            )
-            await self.repository.mark_dead_letter(
-                event_id=queued_event.event_id,
-                payload_json=queued_event.payload_json,
-                stage="queue_validation",
-                reason="invalid_notification_payload",
-                error_message=str(exc),
-                schema_version=queued_event.schema_version,
-                event_type=queued_event.event_type,
-                action=queued_event.action,
-                source_topic=queued_event.source_topic,
-                source_partition=queued_event.source_partition,
-                source_offset=queued_event.source_offset,
-            )
-            return False
-
-        try:
-            recipient_count = await self.connection_manager.broadcast(message.model_dump(mode="json"))
-        except Exception as exc:
-            error_message = f"{exc.__class__.__name__}: {exc}"
-            if queued_event.attempts >= self.settings.notification_max_attempts:
-                logger.error(
-                    "Notification %s exceeded retry budget and was quarantined: %s",
+        with trace_span("notification.dispatch.event", event_id=queued_event.event_id):
+            started_at = time.perf_counter()
+            try:
+                message = InternalBroadcastMessage.model_validate_json(queued_event.payload_json)
+            except ValidationError as exc:
+                metrics.increment_counter("notification_delivery_validation_failures_total")
+                logger.warning(
+                    "Queued notification %s failed validation and was quarantined",
                     queued_event.event_id,
-                    error_message,
                 )
                 await self.repository.mark_dead_letter(
                     event_id=queued_event.event_id,
                     payload_json=queued_event.payload_json,
-                    stage="delivery",
-                    reason="delivery_failed",
-                    error_message=error_message,
+                    stage="queue_validation",
+                    reason="invalid_notification_payload",
+                    error_message=str(exc),
                     schema_version=queued_event.schema_version,
                     event_type=queued_event.event_type,
                     action=queued_event.action,
@@ -92,24 +79,59 @@ class NotificationDeliveryService:
                     source_partition=queued_event.source_partition,
                     source_offset=queued_event.source_offset,
                 )
-            else:
-                logger.warning(
-                    "Notification %s delivery failed; retrying in %s seconds: %s",
-                    queued_event.event_id,
-                    self.settings.notification_retry_delay_seconds,
-                    error_message,
-                )
-                await self.repository.mark_failed(
-                    queued_event.event_id,
-                    error_message,
-                    self.settings.notification_retry_delay_seconds,
-                )
-            return False
+                metrics.increment_counter("notification_delivery_dead_letters_total", stage="queue_validation")
+                return False
 
-        await self.repository.mark_delivered(queued_event.event_id)
-        logger.info(
-            "Delivered notification %s to %s websocket clients",
-            queued_event.event_id,
-            recipient_count,
-        )
-        return True
+            try:
+                recipient_count = await self.connection_manager.broadcast(message.model_dump(mode="json"))
+            except Exception as exc:
+                error_message = f"{exc.__class__.__name__}: {exc}"
+                metrics.increment_counter("notification_delivery_failures_total", stage="delivery")
+                if queued_event.attempts >= self.settings.notification_max_attempts:
+                    logger.error(
+                        "Notification %s exceeded retry budget and was quarantined: %s",
+                        queued_event.event_id,
+                        error_message,
+                    )
+                    await self.repository.mark_dead_letter(
+                        event_id=queued_event.event_id,
+                        payload_json=queued_event.payload_json,
+                        stage="delivery",
+                        reason="delivery_failed",
+                        error_message=error_message,
+                        schema_version=queued_event.schema_version,
+                        event_type=queued_event.event_type,
+                        action=queued_event.action,
+                        source_topic=queued_event.source_topic,
+                        source_partition=queued_event.source_partition,
+                        source_offset=queued_event.source_offset,
+                    )
+                    metrics.increment_counter("notification_delivery_dead_letters_total", stage="delivery")
+                else:
+                    logger.warning(
+                        "Notification %s delivery failed; retrying in %s seconds: %s",
+                        queued_event.event_id,
+                        self.settings.notification_retry_delay_seconds,
+                        error_message,
+                    )
+                    await self.repository.mark_failed(
+                        queued_event.event_id,
+                        error_message,
+                        self.settings.notification_retry_delay_seconds,
+                    )
+                    metrics.increment_counter("notification_delivery_retry_total")
+                return False
+
+            await self.repository.mark_delivered(queued_event.event_id)
+            metrics.increment_counter("notification_delivery_success_total")
+            metrics.increment_counter("notification_delivery_recipients_total", amount=recipient_count)
+            metrics.observe_duration(
+                "notification_delivery_duration_seconds",
+                time.perf_counter() - started_at,
+            )
+            logger.info(
+                "Delivered notification %s to %s websocket clients",
+                queued_event.event_id,
+                recipient_count,
+            )
+            return True

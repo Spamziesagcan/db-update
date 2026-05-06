@@ -4,6 +4,7 @@
 
 - `GET /api/orders`, `POST /api/orders`, `PUT /api/orders/{id}`, and `DELETE /api/orders/{id}` are authenticated user-facing endpoints.
 - `GET /api/stats` is authenticated because it exposes live system information.
+- `GET /health/live` and `GET /health/ready` are unauthenticated orchestration endpoints and should be protected by network policy or ingress rules.
 - `WS /ws` is authenticated for connected clients.
 - `POST /internal/broadcast` is internal-only and is not meant to be called by browsers or anonymous clients.
 

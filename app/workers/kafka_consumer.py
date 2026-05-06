@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from kafka import KafkaConsumer
 
 from app.core.logging_config import configure_logging
+from app.core.observability import metrics, trace_span
 from app.core.settings import Settings, load_settings
 from app.services.notification_event_factory import (
     NotificationEventParseError,
@@ -23,16 +24,21 @@ logger = logging.getLogger(__name__)
 
 
 def _connect_to_database(settings: Settings) -> pymysql.Connection:
-    return pymysql.connect(
-        host=settings.db_host,
-        user=settings.db_user,
-        password=settings.db_password,
-        database=settings.db_name,
-        port=settings.db_port,
-        autocommit=True,
-        charset="utf8mb4",
-        cursorclass=pymysql.cursors.Cursor,
-    )
+    with trace_span("kafka.consumer.database_connect", database=settings.db_name):
+        try:
+            return pymysql.connect(
+                host=settings.db_host,
+                user=settings.db_user,
+                password=settings.db_password,
+                database=settings.db_name,
+                port=settings.db_port,
+                autocommit=True,
+                charset="utf8mb4",
+                cursorclass=pymysql.cursors.Cursor,
+            )
+        except Exception:
+            metrics.increment_counter("db_connection_failures_total", stage="consumer_connect")
+            raise
 
 
 def _store_notification_event(connection: pymysql.Connection, raw_payload: dict[str, object], *, topic: str, partition: int, offset: int, received_at: datetime) -> bool:
@@ -98,8 +104,10 @@ def _store_notification_event(connection: pymysql.Connection, raw_payload: dict[
         inserted = cursor.rowcount == 1
 
     if inserted:
+        metrics.increment_counter("kafka_events_ingested_total", outcome="queued")
         logger.info("Queued notification event %s", message.event_id)
     else:
+        metrics.increment_counter("kafka_events_ingested_total", outcome="duplicate")
         logger.info("Duplicate notification event %s ignored", message.event_id)
     return inserted
 
@@ -166,11 +174,38 @@ def _record_dead_letter(
                 offset,
             ),
         )
+    metrics.increment_counter("kafka_dead_letters_total", stage=stage, reason=reason)
+
+
+def _record_consumer_lag(consumer: KafkaConsumer) -> None:
+    partitions = list(consumer.assignment())
+    if not partitions:
+        return
+
+    try:
+        end_offsets = consumer.end_offsets(partitions)
+        total_lag = 0
+        for partition in partitions:
+            current_position = consumer.position(partition)
+            lag = max(end_offsets.get(partition, current_position) - current_position, 0)
+            total_lag += lag
+            metrics.set_gauge(
+                "kafka_consumer_partition_lag_messages",
+                float(lag),
+                topic=partition.topic,
+                partition=partition.partition,
+            )
+
+        metrics.set_gauge("kafka_consumer_lag_messages", float(total_lag))
+    except Exception:
+        metrics.increment_counter("kafka_consumer_lag_sampling_failures_total")
+        logger.exception("Unable to sample Kafka consumer lag")
 
 
 def start_consumer(settings: Settings | None = None) -> None:
     runtime_settings = settings or load_settings()
     configure_logging(runtime_settings.log_file)
+    metrics.set_gauge("kafka_consumer_running", 1)
 
     logger.info(
         "Connecting to Kafka brokers at %s on topic %s...",
@@ -200,93 +235,110 @@ def start_consumer(settings: Settings | None = None) -> None:
 
     try:
         for message in consumer:
-            raw_value = message.value
-            if raw_value is None:
-                logger.debug("Skipping tombstone at %s-%s-%s", message.topic, message.partition, message.offset)
-                consumer.commit()
-                continue
+            with trace_span(
+                "kafka.consumer.message",
+                topic=message.topic,
+                partition=message.partition,
+                offset=message.offset,
+            ):
+                raw_value = message.value
+                if raw_value is None:
+                    metrics.increment_counter("kafka_message_processing_total", outcome="tombstone")
+                    metrics.increment_counter("kafka_events_ingested_total", outcome="tombstone")
+                    logger.debug("Skipping tombstone at %s-%s-%s", message.topic, message.partition, message.offset)
+                    consumer.commit()
+                    _record_consumer_lag(consumer)
+                    continue
 
-            raw_payload_text = raw_value.decode("utf-8", errors="replace")
-            received_at = datetime.now(timezone.utc)
+                raw_payload_text = raw_value.decode("utf-8", errors="replace")
+                received_at = datetime.now(timezone.utc)
 
-            try:
-                decoded_payload = json.loads(raw_payload_text)
-                if not isinstance(decoded_payload, dict):
-                    raise NotificationEventParseError("Kafka value must decode to a JSON object")
-
-                _store_notification_event(
-                    database,
-                    decoded_payload,
-                    topic=message.topic,
-                    partition=message.partition,
-                    offset=message.offset,
-                    received_at=received_at,
-                )
-                consumer.commit()
-            except NotificationEventParseError as exc:
-                logger.warning(
-                    "Malformed Debezium event at %s-%s-%s: %s",
-                    message.topic,
-                    message.partition,
-                    message.offset,
-                    exc,
-                )
                 try:
-                    _record_dead_letter(
+                    decoded_payload = json.loads(raw_payload_text)
+                    if not isinstance(decoded_payload, dict):
+                        raise NotificationEventParseError("Kafka value must decode to a JSON object")
+
+                    _store_notification_event(
                         database,
-                        event_id=None,
-                        raw_payload=raw_payload_text,
-                        stage="ingest",
-                        reason="malformed_debezium_event",
-                        error_message=str(exc),
+                        decoded_payload,
                         topic=message.topic,
                         partition=message.partition,
                         offset=message.offset,
+                        received_at=received_at,
                     )
                     consumer.commit()
-                except pymysql.MySQLError:
-                    logger.exception("Failed to record malformed event; will retry")
+                    metrics.increment_counter("kafka_message_processing_total", outcome="success")
+                    _record_consumer_lag(consumer)
+                except NotificationEventParseError as exc:
+                    metrics.increment_counter("kafka_message_processing_total", outcome="malformed")
+                    logger.warning(
+                        "Malformed Debezium event at %s-%s-%s: %s",
+                        message.topic,
+                        message.partition,
+                        message.offset,
+                        exc,
+                    )
                     try:
-                        database.close()
+                        _record_dead_letter(
+                            database,
+                            event_id=None,
+                            raw_payload=raw_payload_text,
+                            stage="ingest",
+                            reason="malformed_debezium_event",
+                            error_message=str(exc),
+                            topic=message.topic,
+                            partition=message.partition,
+                            offset=message.offset,
+                        )
+                        consumer.commit()
+                        _record_consumer_lag(consumer)
+                    except pymysql.MySQLError:
+                        metrics.increment_counter("kafka_message_processing_total", outcome="dead_letter_retry")
+                        logger.exception("Failed to record malformed event; will retry")
+                        try:
+                            database.close()
+                        except Exception:
+                            logger.exception("Error closing database connection after dead-letter failure")
+                        database = None
+                        while database is None:
+                            try:
+                                database = _connect_to_database(runtime_settings)
+                            except pymysql.MySQLError:
+                                logger.exception("Unable to reconnect to the database after dead-letter failure")
+                                time.sleep(runtime_settings.notification_retry_delay_seconds)
+                        time.sleep(runtime_settings.notification_retry_delay_seconds)
+                except (pymysql.MySQLError, OSError, json.JSONDecodeError, UnicodeDecodeError):
+                    metrics.increment_counter("kafka_message_processing_total", outcome="retry")
+                    logger.exception(
+                        "Error persisting Kafka event at %s-%s-%s; will retry after backoff",
+                        message.topic,
+                        message.partition,
+                        message.offset,
+                    )
+                    try:
+                        if database is not None:
+                            database.close()
                     except Exception:
-                        logger.exception("Error closing database connection after dead-letter failure")
+                        logger.exception("Error closing database connection after failure")
                     database = None
                     while database is None:
                         try:
                             database = _connect_to_database(runtime_settings)
                         except pymysql.MySQLError:
-                            logger.exception("Unable to reconnect to the database after dead-letter failure")
+                            logger.exception("Unable to reconnect to the database; retrying")
                             time.sleep(runtime_settings.notification_retry_delay_seconds)
                     time.sleep(runtime_settings.notification_retry_delay_seconds)
-            except (pymysql.MySQLError, OSError, json.JSONDecodeError, UnicodeDecodeError) as exc:
-                logger.exception(
-                    "Error persisting Kafka event at %s-%s-%s; will retry after backoff",
-                    message.topic,
-                    message.partition,
-                    message.offset,
-                )
-                try:
-                    if database is not None:
-                        database.close()
                 except Exception:
-                    logger.exception("Error closing database connection after failure")
-                database = None
-                while database is None:
-                    try:
-                        database = _connect_to_database(runtime_settings)
-                    except pymysql.MySQLError:
-                        logger.exception("Unable to reconnect to the database; retrying")
-                        time.sleep(runtime_settings.notification_retry_delay_seconds)
-                time.sleep(runtime_settings.notification_retry_delay_seconds)
-            except Exception:
-                logger.exception(
-                    "Unexpected error processing Kafka event at %s-%s-%s",
-                    message.topic,
-                    message.partition,
-                    message.offset,
-                )
-                time.sleep(runtime_settings.notification_retry_delay_seconds)
+                    metrics.increment_counter("kafka_message_processing_total", outcome="unexpected_error")
+                    logger.exception(
+                        "Unexpected error processing Kafka event at %s-%s-%s",
+                        message.topic,
+                        message.partition,
+                        message.offset,
+                    )
+                    time.sleep(runtime_settings.notification_retry_delay_seconds)
     finally:
+        metrics.set_gauge("kafka_consumer_running", 0)
         try:
             if database is not None:
                 database.close()
