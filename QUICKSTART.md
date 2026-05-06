@@ -19,16 +19,23 @@ cd db-update
 
 ### 2. Create Environment File
 
-Create a `.env` file in the project root:
+Copy `.env.example` to `.env` in the project root and replace the placeholder values:
 
 ```env
 DB_HOST=localhost
 DB_USER=root
-DB_PASSWORD=supersecret99
+DB_PASSWORD=change-me-db-password
 DB_NAME=realtime_orders
 DB_PORT=3306
 KAFKA_BROKERS=localhost:9092
+API_KEYS=change-me-user-key
+INTERNAL_API_KEYS=change-me-internal-key
+CORS_ALLOW_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+APP_ENV=development
+REQUIRE_HTTPS=false
 ```
+
+The backend reads secrets from environment variables, so keep `.env` local and out of source control.
 
 ### 3. Start Infrastructure Services
 
@@ -49,9 +56,12 @@ curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" 
 ```
 
 **Windows PowerShell users:**
+
 ```powershell
 Invoke-RestMethod -Uri "http://localhost:8083/connectors/" -Method Post -ContentType "application/json" -InFile "debezium-connector.json"
 ```
+
+The connector resolves `database.password` from `DB_PASSWORD`, so you do not need to edit the JSON file with a secret value.
 
 ### 5. Install Python Dependencies
 
@@ -67,13 +77,17 @@ In one terminal:
 uvicorn main:app --reload --port 8000
 ```
 
-### 7. Start the Kafka Consumer
+Include `X-API-Key` when calling the HTTP API from scripts or clients. Browser WebSocket clients can pass the same key as the `api_key` query parameter.
+
+### 7. Start the Kafka Ingest Worker
 
 In a **second terminal**:
 
 ```bash
 python consumer.py
 ```
+
+This worker persists normalized notification events in MySQL first; the FastAPI backend replays and broadcasts them from the queue, which keeps restarts and Kafka replays idempotent.
 
 ### 8. Open the Dashboard
 
@@ -89,33 +103,40 @@ Navigate to [http://localhost:8000](http://localhost:8000) in your browser.
 ## Troubleshooting
 
 ### Services not starting?
+
 ```bash
 docker-compose down
 docker-compose up -d
 ```
 
 ### Debezium connector issues?
+
 Check connector status:
+
 ```bash
 curl http://localhost:8083/connectors/orders-connector/status
 ```
 
 ### Database connection errors?
+
 Ensure MySQL is running:
+
 ```bash
 docker ps
 ```
 
 ### Kafka consumer not receiving messages?
+
 Verify Debezium is capturing changes:
+
 ```bash
 docker logs connect
 ```
 
 ## Architecture Flow
 
-```
-User Action → MySQL → Debezium → Kafka → Consumer → FastAPI → WebSocket → Dashboard
+```text
+User Action -> MySQL -> Debezium -> Kafka -> Consumer -> FastAPI -> WebSocket -> Dashboard
 ```
 
 ## Next Steps

@@ -6,7 +6,7 @@
     "database.hostname": "host.docker.internal",
     "database.port": "3306",
     "database.user": "root",
-    "database.password": "n+_A3`eu/45^",
+    "database.password": "${env:DB_PASSWORD}",
     "database.allowPublicKeyRetrieval": "true",
     "database.server.id": "1",
     "database.include.list": "realtime_orders",

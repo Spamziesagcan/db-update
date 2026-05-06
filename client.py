@@ -18,28 +18,32 @@ async def client():
             
             try:
                 async for message in websocket:
-                    if message == "pong":
-                        logger.debug("Received heartbeat response")
+                    if message in {"ping", "pong"}:
+                        logger.debug("Received heartbeat message")
                         continue
                     
                     try:
                         data = json.loads(message)
-                        print(f"\n🔔 NOTIFICATION RECEIVED:")
-                        print(f"   Action: {data['action']}")
-                        print(f"   Order ID: {data['order_id']}")
-                        print(f"   Time: {data['timestamp']}")
-                        
-                        if data['action'] == 'INSERT':
-                            print(f"   ➕ New Order: {data['new_data']['customer_name']} - {data['new_data']['product_name']} ({data['new_data']['status']})")
-                        elif data['action'] == 'UPDATE':
-                            print(f"   🔄 Status Update: {data['old_data']['status']} → {data['new_data']['status']}")
-                        elif data['action'] == 'DELETE':
-                            print(f"   ❌ Deleted Order: {data['old_data']['customer_name']} - {data['old_data']['product_name']}")
-                        
-                        print("-" * 50)
-                    
                     except json.JSONDecodeError:
                         logger.error("Received invalid JSON message")
+                        continue
+
+                    if data.get("event_type") != "order_change":
+                        continue
+
+                    print(f"\n🔔 NOTIFICATION RECEIVED:")
+                    print(f"   Action: {data['action']}")
+                    print(f"   Order ID: {data['order_id']}")
+                    print(f"   Time: {data['timestamp']}")
+                    
+                    if data['action'] == 'INSERT':
+                        print(f"   ➕ New Order: {data['new_data']['customer_name']} - {data['new_data']['product_name']} ({data['new_data']['status']})")
+                    elif data['action'] == 'UPDATE':
+                        print(f"   🔄 Status Update: {data['old_data']['status']} → {data['new_data']['status']}")
+                    elif data['action'] == 'DELETE':
+                        print(f"   ❌ Deleted Order: {data['old_data']['customer_name']} - {data['old_data']['product_name']}")
+                    
+                    print("-" * 50)
             
             finally:
                 heartbeat_task.cancel()

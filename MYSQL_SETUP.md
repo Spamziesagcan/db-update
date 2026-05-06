@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS orders (
 
 ## 3. Update Debezium Connector Configuration
 
-Update `debezium-connector.json` with your MySQL credentials:
+The connector resolves `database.password` from the `DB_PASSWORD` environment variable, so keep the JSON file free of secrets and inject the password at runtime:
 
 ```json
 {
@@ -69,7 +69,7 @@ Update `debezium-connector.json` with your MySQL credentials:
     "database.hostname": "host.docker.internal",
     "database.port": "3306",
     "database.user": "root",
-    "database.password": "YOUR_MYSQL_PASSWORD",
+    "database.password": "${env:DB_PASSWORD}",
     "database.allowPublicKeyRetrieval": "true",
     "database.server.id": "1",
     "database.include.list": "realtime_orders",
@@ -80,7 +80,7 @@ Update `debezium-connector.json` with your MySQL credentials:
 }
 ```
 
-**Important**: Replace `YOUR_MYSQL_PASSWORD` with your actual MySQL root password.
+**Important**: Set `DB_PASSWORD` in your environment or secret manager before registering the connector.
 
 ## 4. Update .env File
 
@@ -89,10 +89,15 @@ Update your `.env` file to match your MySQL configuration:
 ```env
 DB_HOST=localhost
 DB_USER=root
-DB_PASSWORD=YOUR_MYSQL_PASSWORD
+DB_PASSWORD=change-me-db-password
 DB_NAME=realtime_orders
 DB_PORT=3306
 KAFKA_BROKERS=localhost:9092
+API_KEYS=change-me-user-key
+INTERNAL_API_KEYS=change-me-internal-key
+CORS_ALLOW_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+APP_ENV=development
+REQUIRE_HTTPS=false
 ```
 
 ## 5. Grant Necessary Permissions
@@ -129,7 +134,7 @@ You should see the binary log file and position.
 - Verify `host.docker.internal` resolves correctly in Docker
 
 ### "Access denied" error?
-- Verify the password in `debezium-connector.json` matches your MySQL password
+- Verify the `DB_PASSWORD` environment variable matches your MySQL password
 - Ensure the user has proper permissions (see step 5)
 
 ### Binlog format error?
